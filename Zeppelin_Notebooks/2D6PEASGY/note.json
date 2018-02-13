@@ -761,7 +761,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Fast.AI.Lesson1 Sample",
+  "name": "/GPU Test/Fast.AI.Lesson1 Sample",
   "id": "2D6PEASGY",
   "angularObjects": {
     "2CHS8UYQQ:shared_process": [],

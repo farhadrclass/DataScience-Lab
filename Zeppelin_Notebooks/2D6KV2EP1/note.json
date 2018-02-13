@@ -99,7 +99,7 @@
       "id": "20180202-151636_1141277565",
       "dateCreated": "Feb 13, 2018 12:30:09 PM",
       "dateStarted": "Feb 13, 2018 12:50:32 PM",
-      "status": "RUNNING",
+      "status": "ABORT",
       "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
@@ -406,7 +406,7 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "MXNet Hello World - Handwritten Digit Recognition",
+  "name": "/GPU Test/MXNet Hello World - Handwritten Digit Recognition",
   "id": "2D6KV2EP1",
   "angularObjects": {
     "2CHS8UYQQ:shared_process": [],
