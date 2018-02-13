@@ -1,0 +1,778 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\n# Using the GPU #\n\nFor an introductory discussion of Graphical Processing Units (GPU) and their use for intensive parallel computation purposes, see [GPGPU](http://en.wikipedia.org/wiki/GPGPU).\n\nOne of Theano’s design goals is to specify computations at an abstract level, so that the internal function compiler has a lot of flexibility about how to carry out those computations. One of the ways we take advantage of this flexibility is in carrying out calculations on a graphics card.\n\nUsing the GPU in Theano is as simple as setting the device configuration flag to device\u003dcuda. You can optionally target a specific gpu by specifying the number of the gpu as in e.g. device\u003dcuda2. It is also encouraged to set the floating point precision to float32 when working on the GPU as that is usually much faster. For example: **THEANO_FLAGS\u003d\u0027device\u003dcuda,floatX\u003dfloat32\u0027**. You can also set these options in the **.theanorc** file’s [global] section:\n\n    [global]\n    device \u003d cuda\n    floatX \u003d float32\n\nCheck theano config with\n    *python3 -c \u0027import theano; print(theano.config)\u0027 | less*\n    \n\u003chttp://deeplearning.net/software/theano/tutorial/using_gpu.html\u003e\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eUsing the GPU\u003c/h1\u003e\n\u003cp\u003eFor an introductory discussion of Graphical Processing Units (GPU) and their use for intensive parallel computation purposes, see \u003ca href\u003d\"http://en.wikipedia.org/wiki/GPGPU\"\u003eGPGPU\u003c/a\u003e.\u003c/p\u003e\n\u003cp\u003eOne of Theano’s design goals is to specify computations at an abstract level, so that the internal function compiler has a lot of flexibility about how to carry out those computations. One of the ways we take advantage of this flexibility is in carrying out calculations on a graphics card.\u003c/p\u003e\n\u003cp\u003eUsing the GPU in Theano is as simple as setting the device configuration flag to device\u003dcuda. You can optionally target a specific gpu by specifying the number of the gpu as in e.g. device\u003dcuda2. It is also encouraged to set the floating point precision to float32 when working on the GPU as that is usually much faster. For example: \u003cstrong\u003eTHEANO_FLAGS\u003d\u0026lsquo;device\u003dcuda,floatX\u003dfloat32\u0026rsquo;\u003c/strong\u003e. You can also set these options in the \u003cstrong\u003e.theanorc\u003c/strong\u003e file’s [global] section:\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e[global]\ndevice \u003d cuda\nfloatX \u003d float32\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eCheck theano config with\u003cbr/\u003e \u003cem\u003epython3 -c \u0026lsquo;import theano; print(theano.config)\u0026rsquo; | less\u003c/em\u003e\u003c/p\u003e\n\u003cp\u003e\u003ca href\u003d\"http://deeplearning.net/software/theano/tutorial/using_gpu.html\"\u003ehttp://deeplearning.net/software/theano/tutorial/using_gpu.html\u003c/a\u003e\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995620_630979242",
+      "id": "20180131-153854_449415491",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nfrom theano import function, config, shared, tensor\nimport numpy\nimport time\n\nvlen \u003d 10 * 30 * 768  # 10 x #cores x # threads per core\niters \u003d 1000\n\nrng \u003d numpy.random.RandomState(22)\nx \u003d shared(numpy.asarray(rng.rand(vlen), config.floatX))\nf \u003d function([], tensor.exp(x))\nprint(f.maker.fgraph.toposort())\nt0 \u003d time.time()\nfor i in range(iters):\n    r \u003d f()\nt1 \u003d time.time()\nprint(\"Looping %d times took %f seconds\" % (iters, t1 - t0))\nprint(\"Result is %s\" % (r,))\nif numpy.any([isinstance(x.op, tensor.Elemwise) and\n              (\u0027Gpu\u0027 not in type(x.op).__name__)\n              for x in f.maker.fgraph.toposort()]):\n    print(\u0027Used the cpu\u0027)\nelse:\n    print(\u0027Used the gpu\u0027)\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995627_629824995",
+      "id": "20180131-154053_1474256534",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n#\nUsing Convolutional Neural Networks\n\u003d\u003d\u003d\nWelcome to the first week of the first deep learning certificate! We\u0027re going to use convolutional neural networks (CNNs) to allow our computer to see - something that is only possible thanks to deep learning.\nIntroduction to this week\u0027s task: \u0027Dogs vs Cats\u0027\n---\nWe\u0027re going to try to create a model to enter the Dogs vs Cats competition at Kaggle. There are 25,000 labelled dog and cat photos available for training, and 12,500 in the test set that we have to try to label for this competition. According to the Kaggle web-site, when this competition was launched (end of 2013): ***\"State of the art:*** *The current literature suggests machine classifiers can score above 80% accuracy on this task\"*. So if we can beat 80%, then we will be at the cutting edge as of 2013!\nBasic setup\n---\nThere isn\u0027t too much to do to get started - just a few simple configuration steps.\nThis shows plots in the web page itself - we always wants to use this when using jupyter notebook:",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995629_627516502",
+      "id": "20171128-120956_1062305650",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nimport matplotlib\n#%matplotlib inline\n\nimport sys \nprint(sys.version)\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995630_628670749",
+      "id": "20171128-121102_1396296943",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n#\n# Define path to data: (It\u0027s a good idea to put it in a subdirectory of your notebooks folder, and then exclude that directory from git control by adding it to .gitignore.)\n#\npath \u003d \"/usr/local/share/dsLab/datasets/dogscats/\"\n\n#\n# A few basic libraries that we\u0027ll need for the initial exercises:\n#\nfrom __future__ import division,print_function\n\nimport os, json, sys\nfrom glob import glob\nimport numpy as np\nnp.set_printoptions(precision\u003d4, linewidth\u003d100)\nfrom matplotlib import pyplot as plt\n\n# the FastAI test dir contains the desired util\nsys.path.append(\u0027/usr/local/share/dsLab/courses-master/python34/\u0027)\nsys.path.append(\u0027/usr/local/share/dsLab/courses-master/python34/utils.py\u0027)\nprint (sys.path)\n#sys.path.append(\u0027/usr/local/zeppelin/pyUtils\u0027)\n\n# We have created a file most imaginatively called \u0027utils.py\u0027 to store any little convenience functions we\u0027ll want to use. We will discuss these as we use them.\nfrom imp import reload\nimport utils; reload(utils)\nfrom utils import plots",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995631_628286000",
+      "id": "20171128-122508_123499265",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n# Use a pretrained VGG model with our Vgg16 class #\nOur first step is simply to use a model that has been fully created for us, which can recognise a wide variety (1,000 categories) of images. We will use \u0027VGG\u0027, which won the 2014 Imagenet competition, and is a very simple model to create and understand. The VGG Imagenet team created both a larger, slower, slightly more accurate model (VGG 19) and a smaller, faster model (VGG 16). We will be using VGG 16 since the much slower performance of VGG19 is generally not worth the very minor improvement in accuracy.\nWe have created a python class, Vgg16, which makes using the VGG 16 model very straightforward.\n## The punchline: state of the art custom model in 7 lines of code ##\nHere\u0027s everything you need to do to get \u003e97% accuracy on the Dogs vs Cats dataset - we won\u0027t analyze how it works behind the scenes yet, since at this stage we\u0027re just going to focus on the minimum necessary to actually do useful work.",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995632_638674220",
+      "id": "20171128-122810_758950642",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\r\n\r\n# As large as you can, but no larger than 64 is recommended. \r\n# If you have an older or cheaper GPU, you\u0027ll run out of memory, so will have to decrease this.\r\n#batch_size\u003d64\r\nbatch_size\u003d32",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995634_639443718",
+      "id": "20171128-122828_76714447",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# Import our class, and instantiate\nfrom imp import reload\nimport vgg16; reload(vgg16)\nfrom vgg16 import Vgg16",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995634_639443718",
+      "id": "20171128-123939_1489699946",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\npath \u003d \"/usr/local/share/dsLab/dogscats/sample/\"\n#path \u003d \"/usr/local/share/dsLab/dogscats/\"\n\nvgg \u003d Vgg16()\n# Grab a few images at a time for training and validation.\n# NB: They must be in subdirectories named based on their category\nbatches \u003d vgg.get_batches(path+\u0027train\u0027, batch_size\u003dbatch_size)\nval_batches \u003d vgg.get_batches(path+\u0027valid\u0027, batch_size\u003dbatch_size*2)\nvgg.finetune(batches)\nvgg.fit(batches, val_batches, nb_epoch\u003d1)\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995634_639443718",
+      "id": "20171128-123953_1337887177",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nThe code above will work for any image recognition task, with any number of categories! All you have to do is to put your images into one folder per category, and run the code above.\nLet\u0027s take a look at how this works, step by step...\n# Use Vgg16 for basic image recognition #\nLet\u0027s start off by using the Vgg16 class to recognise the main imagenet category for each image.\nWe won\u0027t be able to enter the Cats vs Dogs competition with an Imagenet model alone, since \u0027cat\u0027 and \u0027dog\u0027 are not categories in Imagenet - instead each individual breed is a separate category. However, we can use it to see how well it can recognise the images, which is a good first step.\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995635_639058969",
+      "id": "20171128-124042_1551890333",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# First, create a Vgg16 object:\n#vgg \u003d Vgg16()\n\n# Vgg16 is built on top of Keras (which we will be learning much more about shortly!), a flexible, easy to use deep learning library that sits on top of Theano or Tensorflow. \n# Keras reads groups of images and labels in batches, using a fixed directory structure, where images from each category for training must be placed in a separate folder.\n# Let\u0027s grab batches of data from our training folder:\n#batches \u003d vgg.get_batches(path+\u0027train\u0027, batch_size\u003dbatch_size)\n\n# (BTW, when Keras refers to \u0027classes\u0027, it doesn\u0027t mean python classes - but rather it refers to the categories of the labels, such as \u0027pug\u0027, or \u0027tabby\u0027.)\n# Batches is just a regular python iterator. Each iteration returns both the images themselves, as well as the labels.\nimgs,labels \u003d next(batches)\n\n# As you can see, the labels for each image are an array, containing a 1 in the first position if it\u0027s a cat, and in the second position if it\u0027s a dog. \n# This approach to encoding categorical variables, where an array containing just a single 1 in the position corresponding to the category, is very common in deep learning. \n# It is called one hot encoding.\n# The arrays contain two elements, because we have two categories (cat, and dog). If we had three categories (e.g. cats, dogs, and kangaroos), then the arrays would each contain two 0\u0027s, and one 1.\nplots(imgs, titles\u003dlabels)\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995635_639058969",
+      "id": "20171129-132336_280804241",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# We can now pass the images to Vgg16\u0027s predict() function to get back probabilities, category indexes, and category names for each image\u0027s VGG prediction.\nvgg.predict(imgs, True)\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995635_639058969",
+      "id": "20171129-143959_1499134072",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n\n# The category indexes are based on the ordering of categories used in the VGG model - e.g here are the first four:\nvgg.classes[:4]",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995636_637135225",
+      "id": "20171129-144028_201424682",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n(Note that, other than creating the Vgg16 object, none of these steps are necessary to build a model; they are just showing how to use the class to view imagenet predictions.)\n# Use our Vgg16 class to finetune a Dogs vs Cats model #\nTo change our model so that it outputs \"cat\" vs \"dog\", instead of one of 1,000 very specific categories, we need to use a process called \"finetuning\". Finetuning looks from the outside to be identical to normal machine learning training - we provide a training set with data and labels to learn from, and a validation set to test against. The model learns a set of parameters based on the data provided.\nHowever, the difference is that we start with a model that is already trained to solve a similar problem. The idea is that many of the parameters should be very similar, or the same, between the existing model, and the model we wish to create. Therefore, we only select a subset of parameters to train, and leave the rest untouched. This happens automatically when we call fit() after calling finetune().\nWe create our batches just like before, and making the validation set available as well. A \u0027batch\u0027 (or mini-batch as it is commonly known) is simply a subset of the training data - we use a subset at a time when training or predicting, in order to speed up training, and to avoid running out of memory.\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995636_637135225",
+      "id": "20171129-132711_1970168646",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995636_637135225",
+      "id": "20180131-153831_1772551668",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\nbatch_size\u003d32\n\nbatches \u003d vgg.get_batches(path+\u0027train\u0027, batch_size\u003dbatch_size)\nval_batches \u003d vgg.get_batches(path+\u0027valid\u0027, batch_size\u003dbatch_size)\n\n# Calling finetune() modifies the model such that it will be trained based on the data in the batches provided - in this case, to predict either \u0027dog\u0027 or \u0027cat\u0027.\nvgg.finetune(batches)\n\n# Finally, we fit() the parameters of the model using the training data, reporting the accuracy on the validation set after every epoch. (An epoch is one full pass through the training data.)\nvgg.fit(batches, val_batches, nb_epoch\u003d1)\n\n\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995637_636750476",
+      "id": "20171129-132837_917230884",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nThat shows all of the steps involved in using the Vgg16 class to create an image recognition model using whatever labels you are interested in. For instance, this process could classify paintings by style, or leaves by type of disease, or satellite photos by type of crop, and so forth.\nNext up, we\u0027ll dig one level deeper to see what\u0027s going on in the Vgg16 class.\n# Create a VGG model from scratch in Keras #\nFor the rest of this tutorial, we will not be using the Vgg16 class at all. Instead, we will recreate from scratch the functionality we just used. This is not necessary if all you want to do is use the existing model - but if you want to create your own models, you\u0027ll need to understand these details. It will also help you in the future when you debug any problems with your models, since you\u0027ll understand what\u0027s going on behind the scenes.\n## Model setup ##\nWe need to import all the modules we\u0027ll be using from numpy, scipy, and keras:\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995637_636750476",
+      "id": "20171129-134255_1514476932",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nfrom numpy.random import random, permutation\nfrom scipy import misc, ndimage\nfrom scipy.ndimage.interpolation import zoom\n\nimport keras\nfrom keras import backend as K\nfrom keras.utils.data_utils import get_file\nfrom keras.models import Sequential, Model\nfrom keras.layers.core import Flatten, Dense, Dropout, Lambda\nfrom keras.layers import Input\nfrom keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D\nfrom keras.optimizers import SGD, RMSprop\nfrom keras.preprocessing import image\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995638_637904722",
+      "id": "20171129-134320_1562995743",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# Let\u0027s import the mappings from VGG ids to imagenet category ids and descriptions, for display purposes later.\nFILES_PATH \u003d \u0027http://files.fast.ai/models/\u0027; CLASS_FILE\u003d\u0027imagenet_class_index.json\u0027\n# Keras\u0027 get_file() is a handy function that downloads files, and caches them for re-use later\nfpath \u003d get_file(CLASS_FILE, FILES_PATH+CLASS_FILE, cache_subdir\u003d\u0027models\u0027)\nwith open(fpath) as f: class_dict \u003d json.load(f)\n# Convert dictionary with string indexes into an array\nclasses \u003d [class_dict[str(i)][1] for i in range(len(class_dict))]\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995638_637904722",
+      "id": "20171129-134342_1469991959",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# Here\u0027s a few examples of the categories we just imported:\nclasses[:5]\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995639_637519973",
+      "id": "20171129-134407_1251665330",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Model creation ##\nCreating the model involves creating the model architecture, and then loading the model weights into that architecture. We will start by defining the basic pieces of the VGG architecture.\nVGG has just one type of convolutional block, and one type of fully connected (\u0027dense\u0027) block. Here\u0027s the convolutional block definition:\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995639_637519973",
+      "id": "20171129-134446_1553259375",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\ndef ConvBlock(layers, model, filters):\n    for i in range(layers): \n        model.add(ZeroPadding2D((1,1)))\n        model.add(Convolution2D(filters, 3, 3, activation\u003d\u0027relu\u0027))\n    model.add(MaxPooling2D((2,2), strides\u003d(2,2)))\n\n# ...and here\u0027s the fully-connected definition.\ndef FCBlock(model):\n    model.add(Dense(4096, activation\u003d\u0027relu\u0027))\n    model.add(Dropout(0.5))\n\n# When the VGG model was trained in 2014, the creators subtracted the average of each of the three (R,G,B) channels first, so that the data for each channel had a mean of zero. \n# Furthermore, their software that expected the channels to be in B,G,R order, whereas Python by default uses R,G,B. \n# We need to preprocess our data to make these two changes, so that it is compatible with the VGG model:\n\n# Mean of each channel as provided by VGG researchers\nvgg_mean \u003d np.array([123.68, 116.779, 103.939]).reshape((3,1,1))\n\ndef vgg_preprocess(x):\n    x \u003d x - vgg_mean     # subtract mean\n    return x[:, ::-1]    # reverse axis bgr-\u003ergb\n    \n# Now we\u0027re ready to define the VGG model architecture - look at how simple it is, now that we have the basic blocks defined!\ndef VGG_16():\n    model \u003d Sequential()\n    model.add(Lambda(vgg_preprocess, input_shape\u003d(3,224,224)))\n\n    ConvBlock(2, model, 64)\n    ConvBlock(2, model, 128)\n    ConvBlock(3, model, 256)\n    ConvBlock(3, model, 512)\n    ConvBlock(3, model, 512)\n\n    model.add(Flatten())\n    FCBlock(model)\n    FCBlock(model)\n    model.add(Dense(1000, activation\u003d\u0027softmax\u0027))\n    return model\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995640_635596229",
+      "id": "20171129-134432_2032047100",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nWe\u0027ll learn about what these different blocks do later in the course. For now, it\u0027s enough to know that:\n* Convolution layers are for finding patterns in images\n* Dense (fully connected) layers are for combining patterns across an image\nNow that we\u0027ve defined the architecture, we can create the model like any python object:\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995640_635596229",
+      "id": "20171129-134635_792478465",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\nmodel \u003d VGG_16()\n\n# As well as the architecture, we need the weights that the VGG creators trained. \n# The weights are the part of the model that is learnt from the data, whereas the architecture is pre-defined based on the nature of the problem.\n\n# Downloading pre-trained weights is much preferred to training the model ourselves, since otherwise we would have to download the entire Imagenet archive, and train the model for many days! \n# It\u0027s very helpful when researchers release their weights, as they did here.\nfpath \u003d get_file(\u0027vgg16.h5\u0027, FILES_PATH+\u0027vgg16.h5\u0027, cache_subdir\u003d\u0027models\u0027)\nmodel.load_weights(fpath)",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995641_635211480",
+      "id": "20171129-134659_1876526966",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n# Getting imagenet predictions #\nThe setup of the imagenet model is now complete, so all we have to do is grab a batch of images and call predict() on them.\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995641_635211480",
+      "id": "20171129-143323_1259850240",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nbatch_size \u003d 32\n\n# Keras provides functionality to create batches of data from directories containing images; \n# all we have to do is to define the size to resize the images to, what type of labels to create, whether to randomly shuffle the images,\n# and how many images to include in each batch. We use this little wrapper to define some helpful defaults appropriate for imagenet data:\ndef get_batches(dirname, gen\u003dimage.ImageDataGenerator(), shuffle\u003dTrue, \n                batch_size\u003dbatch_size, class_mode\u003d\u0027categorical\u0027):\n    return gen.flow_from_directory(path+dirname, target_size\u003d(224,224), \n                class_mode\u003dclass_mode, shuffle\u003dshuffle, batch_size\u003dbatch_size)\n                \n# From here we can use exactly the same steps as before to look at predictions from the model.\nbatches \u003d get_batches(\u0027train\u0027, batch_size\u003dbatch_size)\nval_batches \u003d get_batches(\u0027valid\u0027, batch_size\u003dbatch_size)\nimgs,labels \u003d next(batches)\n\n# This shows the \u0027ground truth\u0027\nplots(imgs, titles\u003dlabels)\n\n\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995642_636365727",
+      "id": "20171129-144732_192804004",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The VGG model returns 1,000 probabilities for each image, representing the probability that the model assigns to each possible imagenet category for each image. \n# By finding the index with the largest probability (with np.argmax()) we can find the predicted label.\n\ndef pred_batch(imgs):\n    preds \u003d model.predict(imgs)\n    idxs \u003d np.argmax(preds, axis\u003d1)\n\n    print(\u0027Shape: {}\u0027.format(preds.shape))\n    print(\u0027First 5 classes: {}\u0027.format(classes[:5]))\n    print(\u0027First 5 probabilities: {}\\n\u0027.format(preds[0, :5]))\n    print(\u0027Predictions prob/class: \u0027)\n    \n    for i in range(len(idxs)):\n        idx \u003d idxs[i]\n        print (\u0027  {:.4f}/{}\u0027.format(preds[i, idx], classes[idx]))\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995642_636365727",
+      "id": "20171129-144911_1894723502",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\npred_batch(imgs)",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995643_635980978",
+      "id": "20171129-145112_413436236",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%python\n",
+      "dateUpdated": "Feb 13, 2018 12:29:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/text",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "text",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518542995643_635980978",
+      "id": "20171129-145125_90749363",
+      "dateCreated": "Feb 13, 2018 12:29:55 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Fast.AI.Lesson1 Sample",
+  "id": "2D6PEASGY",
+  "angularObjects": {
+    "2CHS8UYQQ:shared_process": [],
+    "2CKX6DGQZ:shared_process": [],
+    "2C8A4SZ9T_livy2:shared_process": [],
+    "2CK8A9MEG:shared_process": [],
+    "2CKX8WPU1:shared_process": [],
+    "2C4U48MY3_spark2:shared_process": [],
+    "2CKAY1A8Y:shared_process": [],
+    "2CKEKWY8Z:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}

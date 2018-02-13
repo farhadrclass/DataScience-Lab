@@ -40,7 +40,8 @@
     },
     {
       "text": "%md\n\nValidate MXNet Installation\nhttps://mxnet.incubator.apache.org/install/index.html\n\nStart the python terminal.\n\n$ python\n\nRun a short MXNet python program to create a 2X3 matrix of ones a on a GPU, multiply each element in the matrix by 2 followed by adding 1. We expect the output to be a 2X3 matrix with all elements being 3. We use mx.gpu(), to set MXNet context to be GPUs.\n",
-      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "user": "admin",
+      "dateUpdated": "Feb 13, 2018 12:50:40 PM",
       "config": {
         "tableHide": false,
         "editorSetting": {
@@ -70,13 +71,15 @@
       "jobName": "paragraph_1518543009472_-1546699532",
       "id": "20180202-151538_874859166",
       "dateCreated": "Feb 13, 2018 12:30:09 PM",
-      "status": "READY",
-      "errorMessage": "",
+      "dateStarted": "Feb 13, 2018 12:50:40 PM",
+      "dateFinished": "Feb 13, 2018 12:50:40 PM",
+      "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
     {
       "text": "%spark.pyspark\n\nimport mxnet as mx\na \u003d mx.nd.ones((2, 3), mx.cpu())\nb \u003d a * 2 + 1\nb.asnumpy()\n",
-      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "user": "admin",
+      "dateUpdated": "Feb 13, 2018 12:50:32 PM",
       "config": {
         "colWidth": 12.0,
         "editorMode": "ace/mode/python",
@@ -91,20 +94,12 @@
         "params": {},
         "forms": {}
       },
-      "results": {
-        "code": "SUCCESS",
-        "msg": [
-          {
-            "type": "TEXT",
-            "data": "array([[ 3.,  3.,  3.],\n       [ 3.,  3.,  3.]], dtype\u003dfloat32)\n"
-          }
-        ]
-      },
       "apps": [],
       "jobName": "paragraph_1518543009474_-1545930035",
       "id": "20180202-151636_1141277565",
       "dateCreated": "Feb 13, 2018 12:30:09 PM",
-      "status": "READY",
+      "dateStarted": "Feb 13, 2018 12:50:32 PM",
+      "status": "RUNNING",
       "errorMessage": "",
       "progressUpdateIntervalMs": 500
     },
