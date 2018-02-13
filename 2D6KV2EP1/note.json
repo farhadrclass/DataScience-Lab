@@ -1,0 +1,428 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n2.3.1. Installing from a Tar File\n\n    Navigate to your \u003ccudnnpath\u003e directory containing the cuDNN Tar file.\n    Unzip the cuDNN package.\n\n    $ tar -xzvf cudnn-9.0-linux-x64-v7.tgz\n\n    Copy the following files into the CUDA Toolkit directory.\n\n    $ sudo cp cuda/include/cudnn.h /usr/local/cuda/include\n    $ sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64\n    $ sudo chmod a+r /usr/local/cuda/include/cudnn.h\n    /usr/local/cuda/lib64/libcudnn*\n\n\nRead more at: http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#ixzz55z3kRfY9\nFollow us: @GPUComputing on Twitter | NVIDIA on Facebook\n\n",
+      "user": "admin",
+      "dateUpdated": "Feb 13, 2018 12:46:51 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003e2.3.1. Installing from a Tar File\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003eNavigate to your \u0026lt;cudnnpath\u0026gt; directory containing the cuDNN Tar file.\nUnzip the cuDNN package.\n\n$ tar -xzvf cudnn-9.0-linux-x64-v7.tgz\n\nCopy the following files into the CUDA Toolkit directory.\n\n$ sudo cp cuda/include/cudnn.h /usr/local/cuda/include\n$ sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64\n$ sudo chmod a+r /usr/local/cuda/include/cudnn.h\n/usr/local/cuda/lib64/libcudnn*\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eRead more at: \u003ca href\u003d\"http://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#ixzz55z3kRfY9\"\u003ehttp://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#ixzz55z3kRfY9\u003c/a\u003e\u003cbr/\u003eFollow us: @GPUComputing on Twitter | NVIDIA on Facebook\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009469_-1533233321",
+      "id": "20180202-151502_265746263",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "dateStarted": "Feb 13, 2018 12:46:51 PM",
+      "dateFinished": "Feb 13, 2018 12:46:52 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n\nValidate MXNet Installation\nhttps://mxnet.incubator.apache.org/install/index.html\n\nStart the python terminal.\n\n$ python\n\nRun a short MXNet python program to create a 2X3 matrix of ones a on a GPU, multiply each element in the matrix by 2 followed by adding 1. We expect the output to be a 2X3 matrix with all elements being 3. We use mx.gpu(), to set MXNet context to be GPUs.\n",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "tableHide": false,
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003cp\u003eValidate MXNet Installation\u003cbr/\u003e\u003ca href\u003d\"https://mxnet.incubator.apache.org/install/index.html\"\u003ehttps://mxnet.incubator.apache.org/install/index.html\u003c/a\u003e\u003c/p\u003e\n\u003cp\u003eStart the python terminal.\u003c/p\u003e\n\u003cp\u003e$ python\u003c/p\u003e\n\u003cp\u003eRun a short MXNet python program to create a 2X3 matrix of ones a on a GPU, multiply each element in the matrix by 2 followed by adding 1. We expect the output to be a 2X3 matrix with all elements being 3. We use mx.gpu(), to set MXNet context to be GPUs.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009472_-1546699532",
+      "id": "20180202-151538_874859166",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nimport mxnet as mx\na \u003d mx.nd.ones((2, 3), mx.cpu())\nb \u003d a * 2 + 1\nb.asnumpy()\n",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "array([[ 3.,  3.,  3.],\n       [ 3.,  3.,  3.]], dtype\u003dfloat32)\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009474_-1545930035",
+      "id": "20180202-151636_1141277565",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The following source code downloads and loads the images and the corresponding labels into memory\nimport mxnet as mx\nmnist \u003d mx.test_utils.get_mnist()",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009475_-1546314784",
+      "id": "20180201-155702_231126127",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The following source code initializes the data iterators for the MNIST dataset. \n# Note that we initialize two iterators: one for train data and one for test data\nbatch_size \u003d 100\ntrain_iter \u003d mx.io.NDArrayIter(mnist[\u0027train_data\u0027], mnist[\u0027train_label\u0027], batch_size, shuffle\u003dTrue)\nval_iter \u003d mx.io.NDArrayIter(mnist[\u0027test_data\u0027], mnist[\u0027test_label\u0027], batch_size)\n",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009476_-1548238528",
+      "id": "20180201-155742_712380526",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The first approach makes use of a Multilayer Perceptron to solve this problem\ndata \u003d mx.sym.var(\u0027data\u0027)\n# Flatten the data from 4-D shape into 2-D (batch_size, num_channel*width*height)\ndata \u003d mx.sym.flatten(data\u003ddata)",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009478_-1547469030",
+      "id": "20180209-121337_768431036",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The following code declares two fully connected layers with 128 and 64 neurons each\n# The first fully-connected layer and the corresponding activation function\nfc1  \u003d mx.sym.FullyConnected(data\u003ddata, num_hidden\u003d128)\nact1 \u003d mx.sym.Activation(data\u003dfc1, act_type\u003d\"relu\")\n\n# The second fully-connected layer and the corresponding activation function\nfc2  \u003d mx.sym.FullyConnected(data\u003dact1, num_hidden \u003d 64)\nact2 \u003d mx.sym.Activation(data\u003dfc2, act_type\u003d\"relu\")",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009479_-1547853779",
+      "id": "20180209-121357_1367596215",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# The following source code declares the final fully connected layer of size 10\n# MNIST has 10 classes\nfc3  \u003d mx.sym.FullyConnected(data\u003dact2, num_hidden\u003d10)\n# Softmax with cross entropy loss\nmlp  \u003d mx.sym.SoftmaxOutput(data\u003dfc3, name\u003d\u0027softmax\u0027)",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "editorHide": false,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009480_-1549777524",
+      "id": "20180209-121411_1813095212",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\nimport logging\nlogging.getLogger().setLevel(logging.DEBUG)  # logging to stdout\n# create a trainable module on CPU\nmlp_model \u003d mx.mod.Module(symbol\u003dmlp, context\u003dmx.cpu())\n#mlp_model \u003d mx.mod.Module(symbol\u003dmlp, context\u003dmx.gpu())\nmlp_model.fit(train_iter,  # train data\n              eval_data\u003dval_iter,  # validation data\n              optimizer\u003d\u0027sgd\u0027,  # use SGD to train\n              optimizer_params\u003d{\u0027learning_rate\u0027:0.1},  # use fixed learning rate\n              eval_metric\u003d\u0027acc\u0027,  # report accuracy during training\n              batch_end_callback \u003d mx.callback.Speedometer(batch_size, 100), # output progress for each 100 data batches\n              num_epoch\u003d10)  # train for at most 10 dataset passes",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009482_-1549008026",
+      "id": "20180201-155834_1157246348",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# we can evaluate the trained model by running predictions on test data\ntest_iter \u003d mx.io.NDArrayIter(mnist[\u0027test_data\u0027], None, batch_size)\nprob \u003d mlp_model.predict(test_iter)\nassert prob.shape \u003d\u003d (10000, 10)",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009483_-1549392775",
+      "id": "20180201-155846_1605032449",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python"
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009485_-1551701268",
+      "id": "20180209-115917_412507185",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# Convolutional Neural Network\ndata \u003d mx.sym.var(\u0027data\u0027)\n# first conv layer\nconv1 \u003d mx.sym.Convolution(data\u003ddata, kernel\u003d(5,5), num_filter\u003d20)\ntanh1 \u003d mx.sym.Activation(data\u003dconv1, act_type\u003d\"tanh\")\npool1 \u003d mx.sym.Pooling(data\u003dtanh1, pool_type\u003d\"max\", kernel\u003d(2,2), stride\u003d(2,2))\n# second conv layer\nconv2 \u003d mx.sym.Convolution(data\u003dpool1, kernel\u003d(5,5), num_filter\u003d50)\ntanh2 \u003d mx.sym.Activation(data\u003dconv2, act_type\u003d\"tanh\")\npool2 \u003d mx.sym.Pooling(data\u003dtanh2, pool_type\u003d\"max\", kernel\u003d(2,2), stride\u003d(2,2))\n# first fullc layer\nflatten \u003d mx.sym.flatten(data\u003dpool2)\nfc1 \u003d mx.symbol.FullyConnected(data\u003dflatten, num_hidden\u003d500)\ntanh3 \u003d mx.sym.Activation(data\u003dfc1, act_type\u003d\"tanh\")\n# second fullc\nfc2 \u003d mx.sym.FullyConnected(data\u003dtanh3, num_hidden\u003d10)\n# softmax loss\nlenet \u003d mx.sym.SoftmaxOutput(data\u003dfc2, name\u003d\u0027softmax\u0027)",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009489_-1540928299",
+      "id": "20180201-155900_1258055385",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n# create a trainable module on GPU 0\nlenet_model \u003d mx.mod.Module(symbol\u003dlenet, context\u003dmx.cpu())\n#lenet_model \u003d mx.mod.Module(symbol\u003dlenet, context\u003dmx.gpu())\n# train with the same\nlenet_model.fit(train_iter,\n                eval_data\u003dval_iter,\n                optimizer\u003d\u0027sgd\u0027,\n                optimizer_params\u003d{\u0027learning_rate\u0027:0.1},\n                eval_metric\u003d\u0027acc\u0027,\n                batch_end_callback \u003d mx.callback.Speedometer(batch_size, 100),\n                num_epoch\u003d10)",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009491_-1540158801",
+      "id": "20180201-155913_1504384219",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n\n#  use the trained LeNet model to generate predictions for the test data\ntest_iter \u003d mx.io.NDArrayIter(mnist[\u0027test_data\u0027], None, batch_size)\nprob \u003d lenet_model.predict(test_iter)\ntest_iter \u003d mx.io.NDArrayIter(mnist[\u0027test_data\u0027], mnist[\u0027test_label\u0027], batch_size)\n# predict accuracy for lenet\nacc \u003d mx.metric.Accuracy()\nlenet_model.score(test_iter, acc)\nprint(acc)\nassert acc.get()[1] \u003e 0.98",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009492_-1542082546",
+      "id": "20180201-155926_990067595",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%spark.pyspark\n",
+      "dateUpdated": "Feb 13, 2018 12:30:09 PM",
+      "config": {
+        "colWidth": 12.0,
+        "editorMode": "ace/mode/python",
+        "results": {},
+        "enabled": true,
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1518543009493_-1542467295",
+      "id": "20180201-155952_1819939762",
+      "dateCreated": "Feb 13, 2018 12:30:09 PM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "MXNet Hello World - Handwritten Digit Recognition",
+  "id": "2D6KV2EP1",
+  "angularObjects": {
+    "2CHS8UYQQ:shared_process": [],
+    "2CKX6DGQZ:shared_process": [],
+    "2C8A4SZ9T_livy2:shared_process": [],
+    "2CK8A9MEG:shared_process": [],
+    "2CKX8WPU1:shared_process": [],
+    "2C4U48MY3_spark2:shared_process": [],
+    "2CKAY1A8Y:shared_process": [],
+    "2CKEKWY8Z:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}
