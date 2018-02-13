@@ -911,31 +911,9 @@
       "progressUpdateIntervalMs": 500
     }
   ],
-  "name": "Labs / Spark 2.x / Data Scientist / Scala / 101 - Intro to Machine Learning",
+  "name": "999 Getting Started/Labs / Spark 2.x/ Data Scientist/ Scala/ 101 - Intro to Machine Learning",
   "id": "2CCBNZ5YY",
-  "angularObjects": {
-    "2C9J4X9BB:shared_process": [],
-    "2C97XTJFE:shared_process": [],
-    "2C9BD8WCX:shared_process": [],
-    "2CBT85YD7:shared_process": [],
-    "2C8RGTKC3:shared_process": [],
-    "2CBQNWPMD:shared_process": [],
-    "2C8JDGPHH:shared_process": [],
-    "2C9CSKWHY:shared_process": [],
-    "2CBN9WPNN:shared_process": [],
-    "2CB11VTD7:shared_process": [],
-    "2C9Z4TVBW:shared_process": [],
-    "2CB3RUCX8:shared_process": [],
-    "2C9PSG7XP:shared_process": [],
-    "2C8PPBWFC:shared_process": [],
-    "2C95B7UJY:shared_process": [],
-    "2CB91QEZG:shared_process": [],
-    "2CAPDMDA1:shared_process": [],
-    "2CACTG458:shared_process": [],
-    "2CAD4U2BW:shared_process": [],
-    "2CBTJTHZE:shared_process": [],
-    "2C9VPGHR9:shared_process": []
-  },
+  "angularObjects": {},
   "config": {
     "looknfeel": "default",
     "personalizedMode": "false"

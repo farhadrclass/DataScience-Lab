@@ -1,0 +1,3577 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n\n# Spark RDDs and DataFrames with Python\n#### Analyzing a Text File\n##### Level: Beginner\nAuthor: Robert Hryniewicz\nTwitter: @RobHryniewicz\n\nLast updated: Aug 1st, 2016 (ver 0.6)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003eSpark RDDs and DataFrames with Python\u003c/h1\u003e\n\u003ch4\u003eAnalyzing a Text File\u003c/h4\u003e\n\u003ch5\u003eLevel: Beginner\u003c/h5\u003e\n\u003cp\u003eAuthor: Robert Hryniewicz\n\u003cbr  /\u003eTwitter: @RobHryniewicz\u003c/p\u003e\n\u003cp\u003eLast updated: Aug 1st, 2016 (ver 0.6)\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003eSpark RDDs and DataFrames with Python\u003c/h1\u003e\n\u003ch4\u003eAnalyzing a Text File\u003c/h4\u003e\n\u003ch5\u003eLevel: Beginner\u003c/h5\u003e\n\u003cp\u003eAuthor: Robert Hryniewicz\n\u003cbr  /\u003eTwitter: @RobHryniewicz\u003c/p\u003e\n\u003cp\u003eLast updated: Aug 1st, 2016 (ver 0.6)\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955022_1905768678",
+      "id": "20160331-233830_1876799966",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Introduction\n\nThis lab consists of two parts. In each section you will perform a basic Word Count.\n#\nIn **Part 1**, we will introduce **RDDs**, Spark\u0027s primary low-level abstraction, and several core concepts.\nIn **Part 2**, we will introduce **DataFrames**, a higher-level abstraction than RDDs, along with SparkSQL allowing you to use SQL statements to query a temporary table.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 217.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003eIntroduction\u003c/h2\u003e\n\u003cp\u003eThis lab consists of two parts. In each section you will perform a basic Word Count.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eIn \u003cstrong\u003ePart 1\u003c/strong\u003e, we will introduce \u003cstrong\u003eRDDs\u003c/strong\u003e, Spark\u0027s primary low-level abstraction, and several core concepts.\n\u003cbr  /\u003eIn \u003cstrong\u003ePart 2\u003c/strong\u003e, we will introduce \u003cstrong\u003eDataFrames\u003c/strong\u003e, a higher-level abstraction than RDDs, along with SparkSQL allowing you to use SQL statements to query a temporary table.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003eIntroduction\u003c/h2\u003e\n\u003cp\u003eThis lab consists of two parts. In each section you will perform a basic Word Count.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eIn \u003cstrong\u003ePart 1\u003c/strong\u003e, we will introduce \u003cstrong\u003eRDDs\u003c/strong\u003e, Spark\u0027s primary low-level abstraction, and several core concepts.\n\u003cbr  /\u003eIn \u003cstrong\u003ePart 2\u003c/strong\u003e, we will introduce \u003cstrong\u003eDataFrames\u003c/strong\u003e, a higher-level abstraction than RDDs, along with SparkSQL allowing you to use SQL statements to query a temporary table.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955022_1905768678",
+      "id": "20160331-233830_1038788941",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Concepts\n\nAt the core of Spark is the notion of a Resilient Distributed Dataset (RDD), which is an immutable and fault-tolerant collection of objects that is partitioned and distributed across multiple physical nodes on a cluster and they run in parallel.\n#\nTypically, RDDs are instantiated by loading data from a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat on a YARN cluster.\n#\nOnce an RDD is instantiated, you can apply a **[series of operations](https://spark.apache.org/docs/latest/programming-guide.html#rdd-operations)**.\n#\nAll operations fall into one of two types: **[Transformations](https://spark.apache.org/docs/latest/programming-guide.html#transformations)** or **[Actions](https://spark.apache.org/docs/latest/programming-guide.html#actions)**. \n#\nTransformation operations, as the name suggests, create new datasets from an existing RDD and build out the processing Directed Acyclic Graph (DAG) that can then be applied on the partitioned dataset across the YARN cluster. An Action operation, on the other hand, executes DAG and returns a value.\n#\nIn this lab we will use the following **[Transformations](https://spark.apache.org/docs/latest/programming-guide.html#transformations)**:\n- map(func)\n- filter(func)\n- flatMap(func)\n- reduceByKey(func)\n\nand **[Actions](https://spark.apache.org/docs/latest/programming-guide.html#actions)**:\n\n- collect()\n- count()\n- take()\n- takeOrdered(n, [ordering])\n- countByKey()\n\nA typical Spark application has the following four phases:\n1. Instantiate Input RDDs\n2. Transform RDDs\n3. Persist Intermediate RDDs\n4. Take Action on RDDs",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch3\u003eConcepts\u003c/h3\u003e\n\u003cp\u003eAt the core of Spark is the notion of a Resilient Distributed Dataset (RDD), which is an immutable and fault-tolerant collection of objects that is partitioned and distributed across multiple physical nodes on a cluster and they run in parallel.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eTypically, RDDs are instantiated by loading data from a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat on a YARN cluster.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eOnce an RDD is instantiated, you can apply a \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#rdd-operations\"\u003eseries of operations\u003c/a\u003e\u003c/strong\u003e.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eAll operations fall into one of two types: \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#transformations\"\u003eTransformations\u003c/a\u003e\u003c/strong\u003e or \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#actions\"\u003eActions\u003c/a\u003e\u003c/strong\u003e.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eTransformation operations, as the name suggests, create new datasets from an existing RDD and build out the processing Directed Acyclic Graph (DAG) that can then be applied on the partitioned dataset across the YARN cluster. An Action operation, on the other hand, executes DAG and returns a value.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eIn this lab we will use the following \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#transformations\"\u003eTransformations\u003c/a\u003e\u003c/strong\u003e:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003emap(func)\u003c/li\u003e\n\u003cli\u003efilter(func)\u003c/li\u003e\n\u003cli\u003eflatMap(func)\u003c/li\u003e\n\u003cli\u003ereduceByKey(func)\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eand \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#actions\"\u003eActions\u003c/a\u003e\u003c/strong\u003e:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ecollect()\u003c/li\u003e\n\u003cli\u003ecount()\u003c/li\u003e\n\u003cli\u003etake()\u003c/li\u003e\n\u003cli\u003etakeOrdered(n, [ordering])\u003c/li\u003e\n\u003cli\u003ecountByKey()\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eA typical Spark application has the following four phases:\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003eInstantiate Input RDDs\u003c/li\u003e\n\u003cli\u003eTransform RDDs\u003c/li\u003e\n\u003cli\u003ePersist Intermediate RDDs\u003c/li\u003e\n\u003cli\u003eTake Action on RDDs\u003c/li\u003e\n\u003c/ol\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch3\u003eConcepts\u003c/h3\u003e\n\u003cp\u003eAt the core of Spark is the notion of a Resilient Distributed Dataset (RDD), which is an immutable and fault-tolerant collection of objects that is partitioned and distributed across multiple physical nodes on a cluster and they run in parallel.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eTypically, RDDs are instantiated by loading data from a shared filesystem, HDFS, HBase, or any data source offering a Hadoop InputFormat on a YARN cluster.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eOnce an RDD is instantiated, you can apply a \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#rdd-operations\"\u003eseries of operations\u003c/a\u003e\u003c/strong\u003e.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eAll operations fall into one of two types: \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#transformations\"\u003eTransformations\u003c/a\u003e\u003c/strong\u003e or \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#actions\"\u003eActions\u003c/a\u003e\u003c/strong\u003e.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eTransformation operations, as the name suggests, create new datasets from an existing RDD and build out the processing Directed Acyclic Graph (DAG) that can then be applied on the partitioned dataset across the YARN cluster. An Action operation, on the other hand, executes DAG and returns a value.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eIn this lab we will use the following \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#transformations\"\u003eTransformations\u003c/a\u003e\u003c/strong\u003e:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003emap(func)\u003c/li\u003e\n\u003cli\u003efilter(func)\u003c/li\u003e\n\u003cli\u003eflatMap(func)\u003c/li\u003e\n\u003cli\u003ereduceByKey(func)\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eand \u003cstrong\u003e\u003ca href\u003d\"https://spark.apache.org/docs/latest/programming-guide.html#actions\"\u003eActions\u003c/a\u003e\u003c/strong\u003e:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003ecollect()\u003c/li\u003e\n\u003cli\u003ecount()\u003c/li\u003e\n\u003cli\u003etake()\u003c/li\u003e\n\u003cli\u003etakeOrdered(n, [ordering])\u003c/li\u003e\n\u003cli\u003ecountByKey()\u003c/li\u003e\n\u003c/ul\u003e\n\u003cp\u003eA typical Spark application has the following four phases:\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003eInstantiate Input RDDs\u003c/li\u003e\n\u003cli\u003eTransform RDDs\u003c/li\u003e\n\u003cli\u003ePersist Intermediate RDDs\u003c/li\u003e\n\u003cli\u003eTake Action on RDDs\u003c/li\u003e\n\u003c/ol\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955022_1905768678",
+      "id": "20160331-233830_2031164924",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Lab Pre-Check\nBefore we proceed, let\u0027s verify Spark Version. You should be running at minimum Spark 1.6.\n#\n**Note**: The first time you run `sc.version` in the paragraph below, several services will initialize in the background. This may take **1~2 min** so please **be patient**. Afterwards, each paragraph should run much more quickly since all the services will already be running.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch3\u003eLab Pre-Check\u003c/h3\u003e\n\u003cp\u003eBefore we proceed, let\u0027s verify Spark Version. You should be running at minimum Spark 1.6.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003e\u003cstrong\u003eNote\u003c/strong\u003e: The first time you run \u003ccode\u003esc.version\u003c/code\u003e in the paragraph below, several services will initialize in the background. This may take \u003cstrong\u003e1~2 min\u003c/strong\u003e so please \u003cstrong\u003ebe patient\u003c/strong\u003e. Afterwards, each paragraph should run much more quickly since all the services will already be running.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch3\u003eLab Pre-Check\u003c/h3\u003e\n\u003cp\u003eBefore we proceed, let\u0027s verify Spark Version. You should be running at minimum Spark 1.6.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003e\u003cstrong\u003eNote\u003c/strong\u003e: The first time you run \u003ccode\u003esc.version\u003c/code\u003e in the paragraph below, several services will initialize in the background. This may take \u003cstrong\u003e1~2 min\u003c/strong\u003e so please \u003cstrong\u003ebe patient\u003c/strong\u003e. Afterwards, each paragraph should run much more quickly since all the services will already be running.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955023_1905383929",
+      "id": "20160331-233830_1388824956",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nTo run a paragraph in a Zeppelin notebook you can either click the `play` button (blue triangle) on the right-hand side or simply press `Shift + Enter`.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eTo run a paragraph in a Zeppelin notebook you can either click the \u003ccode\u003eplay\u003c/code\u003e button (blue triangle) on the right-hand side or simply press \u003ccode\u003eShift + Enter\u003c/code\u003e.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eTo run a paragraph in a Zeppelin notebook you can either click the \u003ccode\u003eplay\u003c/code\u003e button (blue triangle) on the right-hand side or simply press \u003ccode\u003eShift + Enter\u003c/code\u003e.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955023_1905383929",
+      "id": "20160331-233830_981276249",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Check Spark Version",
+      "text": "sc.version",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "res49: String \u003d 1.6.2\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "res49: String \u003d 1.6.2\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955023_1905383929",
+      "id": "20160331-233830_1782991630",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md ####Now let\u0027s proceed with our core lab.\n",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch4\u003eNow let\u0027s proceed with our core lab.\u003c/h4\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch4\u003eNow let\u0027s proceed with our core lab.\u003c/h4\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955023_1905383929",
+      "id": "20160331-233830_122830635",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md \n\n## Part 1\n#### Introduction to RDDs with Word Count example",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003ePart 1\u003c/h2\u003e\n\u003ch4\u003eIntroduction to RDDs with Word Count example\u003c/h4\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003ePart 1\u003c/h2\u003e\n\u003ch4\u003eIntroduction to RDDs with Word Count example\u003c/h4\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955023_1905383929",
+      "id": "20160331-233830_682697678",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nIn this section you will perform a basic word count with RDDs.\n#\nYou will download external text data file to your sandbox. Then you will perform lexical analysis, or tokenization, by breaking up text into words/tokens.\nThe list of tokens then becomes an input for further processing to this and following sections.\n#\nBy the end of this section you should have learned how to perform low-level transformations and actions with Spark RDDs and lambda expressions.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eIn this section you will perform a basic word count with RDDs.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eYou will download external text data file to your sandbox. Then you will perform lexical analysis, or tokenization, by breaking up text into words/tokens.\n\u003cbr  /\u003eThe list of tokens then becomes an input for further processing to this and following sections.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy the end of this section you should have learned how to perform low-level transformations and actions with Spark RDDs and lambda expressions.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eIn this section you will perform a basic word count with RDDs.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eYou will download external text data file to your sandbox. Then you will perform lexical analysis, or tokenization, by breaking up text into words/tokens.\n\u003cbr  /\u003eThe list of tokens then becomes an input for further processing to this and following sections.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy the end of this section you should have learned how to perform low-level transformations and actions with Spark RDDs and lambda expressions.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_94748225",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nIn the next paragraph we are going to download data using shell commands. A shell command in a Zeppelin notebookcan can be invoked by \nprepending a block of shell commands with a line containing `%sh` characters.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eIn the next paragraph we are going to download data using shell commands. A shell command in a Zeppelin notebookcan can be invoked by\n\u003cbr  /\u003eprepending a block of shell commands with a line containing \u003ccode\u003e%sh\u003c/code\u003e characters.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eIn the next paragraph we are going to download data using shell commands. A shell command in a Zeppelin notebookcan can be invoked by\n\u003cbr  /\u003eprepending a block of shell commands with a line containing \u003ccode\u003e%sh\u003c/code\u003e characters.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_1148035148",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Prepare Directories and Download a Dataset",
+      "text": "%sh\ncd /tmp\n\n#  Remove old dataset file if already exists in local /tmp directory\nif [ -e /tmp/About-Apache-NiFi.txt ]\nthen\n    rm -f /tmp/About-Apache-NiFi.txt\nfi\n\n# Remove old dataset if already exists in hadoop /tmp directory\nif hadoop fs -stat /tmp/About-Apache-NiFi.txt\nthen\n   hadoop fs -rm  /tmp/About-Apache-NiFi.txt\nfi\n\n# Download \"About-Apache-NiFi\" text file\nwget https://raw.githubusercontent.com/roberthryniewicz/datasets/master/About-Apache-NiFi.txt\n\n# Move dataset to hadoop /tmp\nhadoop fs -put About-Apache-NiFi.txt /tmp",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/sh",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "2016-08-11 00:33:39\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "2016-08-11 00:33:39\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_2033647788",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Preview Downloaded Text File",
+      "text": "%sh\nhadoop fs -cat /tmp/About-Apache-NiFi.txt | head",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/sh",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Apache NiFi Overview \nTeam dev@nifi.apache.org \n\nWhat is Apache NiFi? Put simply NiFi was built to automate the flow of data between systems. While the term dataflow is used in a variety of contexts, we’ll use it here to mean the automated and managed flow of information between systems. This problem space has been around ever since enterprises had more than one system, where some of the systems created data and some of the systems consumed data. The problems and solution patterns that emerged have been discussed and articulated extensively. A comprehensive and readily consumed form is found in the Enterprise Integration Patterns [eip]. \n\nSome of the high-level challenges of dataflow include: \n\nSystems fail \nNetworks fail, disks fail, software crashes, people make mistakes. \n\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "Apache NiFi Overview \nTeam dev@nifi.apache.org \n\nWhat is Apache NiFi? Put simply NiFi was built to automate the flow of data between systems. While the term dataflow is used in a variety of contexts, we’ll use it here to mean the automated and managed flow of information between systems. This problem space has been around ever since enterprises had more than one system, where some of the systems created data and some of the systems consumed data. The problems and solution patterns that emerged have been discussed and articulated extensively. A comprehensive and readily consumed form is found in the Enterprise Integration Patterns [eip]. \n\nSome of the high-level challenges of dataflow include: \n\nSystems fail \nNetworks fail, disks fail, software crashes, people make mistakes. \n\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_168647264",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nNext we are going to run Spark Python (or PySpark) that can be invoked by prepending a block of Python code with a line containing `%pyspark`.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNext we are going to run Spark Python (or PySpark) that can be invoked by prepending a block of Python code with a line containing \u003ccode\u003e%pyspark\u003c/code\u003e.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNext we are going to run Spark Python (or PySpark) that can be invoked by prepending a block of Python code with a line containing \u003ccode\u003e%pyspark\u003c/code\u003e.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_1923635655",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n#\nThe important thing to notice in the next paragraph is the `sc` object or Spark Context. Spark Context is automatically created by your driver program in Zeppelin.\n#\nSpark Context is the main entry point for Spark functionality. A Spark Context represents the connection to a Spark cluster, and can be used to create RDDs, which we will do next.\n#\nRemember that Spark doesn\u0027t have any storage layer, rather it has connectors to HDFS, S3, Cassandra, HBase, Hive etc. to bring data into memory. Thus, in the next paragraph you will read data (that you\u0027ve just downloaded) from HDFS.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eThe important thing to notice in the next paragraph is the \u003ccode\u003esc\u003c/code\u003e object or Spark Context. Spark Context is automatically created by your driver program in Zeppelin.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eSpark Context is the main entry point for Spark functionality. A Spark Context represents the connection to a Spark cluster, and can be used to create RDDs, which we will do next.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eRemember that Spark doesn\u0027t have any storage layer, rather it has connectors to HDFS, S3, Cassandra, HBase, Hive etc. to bring data into memory. Thus, in the next paragraph you will read data (that you\u0027ve just downloaded) from HDFS.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eThe important thing to notice in the next paragraph is the \u003ccode\u003esc\u003c/code\u003e object or Spark Context. Spark Context is automatically created by your driver program in Zeppelin.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eSpark Context is the main entry point for Spark functionality. A Spark Context represents the connection to a Spark cluster, and can be used to create RDDs, which we will do next.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eRemember that Spark doesn\u0027t have any storage layer, rather it has connectors to HDFS, S3, Cassandra, HBase, Hive etc. to bring data into memory. Thus, in the next paragraph you will read data (that you\u0027ve just downloaded) from HDFS.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_178148000",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Read Text File from HDFS and Preview its Contents",
+      "text": "%pyspark\n\n# Parallelize text file using pre-initialized Spark context (sc)\nlines \u003d sc.textFile(\"/tmp/About-Apache-NiFi.txt\")\n\n# Take a look at a few lines with a take() action.\nprint lines.take(4)\n\n# Output: Notice that each line has been placed in a seperate array bucket.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "tableHide": false,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[u\u0027Apache NiFi Overview \u0027, u\u0027Team dev@nifi.apache.org \u0027, u\u0027\u0027, u\u0027What is Apache NiFi? Put simply NiFi was built to automate the flow of data between systems. While the term dataflow is used in a variety of contexts, we\\u2019ll use it here to mean the automated and managed flow of information between systems. This problem space has been around ever since enterprises had more than one system, where some of the systems created data and some of the systems consumed data. The problems and solution patterns that emerged have been discussed and articulated extensively. A comprehensive and readily consumed form is found in the Enterprise Integration Patterns [eip]. \u0027]\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "[u\u0027Apache NiFi Overview \u0027, u\u0027Team dev@nifi.apache.org \u0027, u\u0027\u0027, u\u0027What is Apache NiFi? Put simply NiFi was built to automate the flow of data between systems. While the term dataflow is used in a variety of contexts, we\\u2019ll use it here to mean the automated and managed flow of information between systems. This problem space has been around ever since enterprises had more than one system, where some of the systems created data and some of the systems consumed data. The problems and solution patterns that emerged have been discussed and articulated extensively. A comprehensive and readily consumed form is found in the Enterprise Integration Patterns [eip]. \u0027]\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_541232082",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nIn the next paragraphs we will start using Python lambda (or anonymous) functions. If you\u0027re unfamiliar with lambda expressions, \nreview **[Python Lambda Expressions](https://docs.python.org/2/tutorial/controlflow.html#lambda-expressions)** before proceeding.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eIn the next paragraphs we will start using Python lambda (or anonymous) functions. If you\u0027re unfamiliar with lambda expressions,\n\u003cbr  /\u003ereview \u003cstrong\u003e\u003ca href\u003d\"https://docs.python.org/2/tutorial/controlflow.html#lambda-expressions\"\u003ePython Lambda Expressions\u003c/a\u003e\u003c/strong\u003e before proceeding.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eIn the next paragraphs we will start using Python lambda (or anonymous) functions. If you\u0027re unfamiliar with lambda expressions,\n\u003cbr  /\u003ereview \u003cstrong\u003e\u003ca href\u003d\"https://docs.python.org/2/tutorial/controlflow.html#lambda-expressions\"\u003ePython Lambda Expressions\u003c/a\u003e\u003c/strong\u003e before proceeding.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_1894357129",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Extract All Words from the Document",
+      "text": "%pyspark\n# Here we\u0027re tokenizing our text file by using the split() function. Each original line of text is split into words or tokens on a single space.\n#  Also, since each line of the original text occupies a seperate bucket in the array, we need to use\n#  a flatMap() transformation to flatten all buckets into a asingle/flat array of tokens.\n\nwords \u003d lines.flatMap(lambda line: line.split(\" \"))",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955024_1915772149",
+      "id": "20160331-233830_2015200328",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nNote that after you click \u0027play\u0027 in the paragraph above \"nothing\" appears to happen.\n#\nThat\u0027s because `flatMap()` is a transformation and all transformations in Spark are lazy, in that they do not compute their results right away. Instead, they just remember the transformations applied to some base dataset (e.g. a file). The transformations are only computed when an action requires a result to be returned to the driver program. This design enables Spark to run more efficiently – for example, we can realize that a dataset created through map will be used in a reduce and return only the result of the reduce to the driver, rather than the larger mapped dataset.\n#\nBy default, each transformed RDD may be recomputed each time you run an action on it. However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. There is also support for persisting RDDs on disk, or replicated across multiple nodes.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNote that after you click \u0027play\u0027 in the paragraph above \u0026ldquo;nothing\u0026rdquo; appears to happen.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eThat\u0027s because \u003ccode\u003eflatMap()\u003c/code\u003e is a transformation and all transformations in Spark are lazy, in that they do not compute their results right away. Instead, they just remember the transformations applied to some base dataset (e.g. a file). The transformations are only computed when an action requires a result to be returned to the driver program. This design enables Spark to run more efficiently – for example, we can realize that a dataset created through map will be used in a reduce and return only the result of the reduce to the driver, rather than the larger mapped dataset.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy default, each transformed RDD may be recomputed each time you run an action on it. However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. There is also support for persisting RDDs on disk, or replicated across multiple nodes.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNote that after you click \u0027play\u0027 in the paragraph above \u0026ldquo;nothing\u0026rdquo; appears to happen.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eThat\u0027s because \u003ccode\u003eflatMap()\u003c/code\u003e is a transformation and all transformations in Spark are lazy, in that they do not compute their results right away. Instead, they just remember the transformations applied to some base dataset (e.g. a file). The transformations are only computed when an action requires a result to be returned to the driver program. This design enables Spark to run more efficiently – for example, we can realize that a dataset created through map will be used in a reduce and return only the result of the reduce to the driver, rather than the larger mapped dataset.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy default, each transformed RDD may be recomputed each time you run an action on it. However, you may also persist an RDD in memory using the persist (or cache) method, in which case Spark will keep the elements around on the cluster for much faster access the next time you query it. There is also support for persisting RDDs on disk, or replicated across multiple nodes.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_1507315859",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Take a look at first 100 words",
+      "text": "%pyspark\nprint words.take(100)   # we\u0027re using a take(n) action\n\n# Output: As you can see, each word occupies a distinc array bucket.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[u\u0027Apache\u0027, u\u0027NiFi\u0027, u\u0027Overview\u0027, u\u0027\u0027, u\u0027Team\u0027, u\u0027dev@nifi.apache.org\u0027, u\u0027\u0027, u\u0027\u0027, u\u0027What\u0027, u\u0027is\u0027, u\u0027Apache\u0027, u\u0027NiFi?\u0027, u\u0027Put\u0027, u\u0027simply\u0027, u\u0027NiFi\u0027, u\u0027was\u0027, u\u0027built\u0027, u\u0027to\u0027, u\u0027automate\u0027, u\u0027the\u0027, u\u0027flow\u0027, u\u0027of\u0027, u\u0027data\u0027, u\u0027between\u0027, u\u0027systems.\u0027, u\u0027While\u0027, u\u0027the\u0027, u\u0027term\u0027, u\u0027dataflow\u0027, u\u0027is\u0027, u\u0027used\u0027, u\u0027in\u0027, u\u0027a\u0027, u\u0027variety\u0027, u\u0027of\u0027, u\u0027contexts,\u0027, u\u0027we\\u2019ll\u0027, u\u0027use\u0027, u\u0027it\u0027, u\u0027here\u0027, u\u0027to\u0027, u\u0027mean\u0027, u\u0027the\u0027, u\u0027automated\u0027, u\u0027and\u0027, u\u0027managed\u0027, u\u0027flow\u0027, u\u0027of\u0027, u\u0027information\u0027, u\u0027between\u0027, u\u0027systems.\u0027, u\u0027This\u0027, u\u0027problem\u0027, u\u0027space\u0027, u\u0027has\u0027, u\u0027been\u0027, u\u0027around\u0027, u\u0027ever\u0027, u\u0027since\u0027, u\u0027enterprises\u0027, u\u0027had\u0027, u\u0027more\u0027, u\u0027than\u0027, u\u0027one\u0027, u\u0027system,\u0027, u\u0027where\u0027, u\u0027some\u0027, u\u0027of\u0027, u\u0027the\u0027, u\u0027systems\u0027, u\u0027created\u0027, u\u0027data\u0027, u\u0027and\u0027, u\u0027some\u0027, u\u0027of\u0027, u\u0027the\u0027, u\u0027systems\u0027, u\u0027consumed\u0027, u\u0027data.\u0027, u\u0027The\u0027, u\u0027problems\u0027, u\u0027and\u0027, u\u0027solution\u0027, u\u0027patterns\u0027, u\u0027that\u0027, u\u0027emerged\u0027, u\u0027have\u0027, u\u0027been\u0027, u\u0027discussed\u0027, u\u0027and\u0027, u\u0027articulated\u0027, u\u0027extensively.\u0027, u\u0027A\u0027, u\u0027comprehensive\u0027, u\u0027and\u0027, u\u0027readily\u0027, u\u0027consumed\u0027, u\u0027form\u0027, u\u0027is\u0027, u\u0027found\u0027]\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "[u\u0027Apache\u0027, u\u0027NiFi\u0027, u\u0027Overview\u0027, u\u0027\u0027, u\u0027Team\u0027, u\u0027dev@nifi.apache.org\u0027, u\u0027\u0027, u\u0027\u0027, u\u0027What\u0027, u\u0027is\u0027, u\u0027Apache\u0027, u\u0027NiFi?\u0027, u\u0027Put\u0027, u\u0027simply\u0027, u\u0027NiFi\u0027, u\u0027was\u0027, u\u0027built\u0027, u\u0027to\u0027, u\u0027automate\u0027, u\u0027the\u0027, u\u0027flow\u0027, u\u0027of\u0027, u\u0027data\u0027, u\u0027between\u0027, u\u0027systems.\u0027, u\u0027While\u0027, u\u0027the\u0027, u\u0027term\u0027, u\u0027dataflow\u0027, u\u0027is\u0027, u\u0027used\u0027, u\u0027in\u0027, u\u0027a\u0027, u\u0027variety\u0027, u\u0027of\u0027, u\u0027contexts,\u0027, u\u0027we\\u2019ll\u0027, u\u0027use\u0027, u\u0027it\u0027, u\u0027here\u0027, u\u0027to\u0027, u\u0027mean\u0027, u\u0027the\u0027, u\u0027automated\u0027, u\u0027and\u0027, u\u0027managed\u0027, u\u0027flow\u0027, u\u0027of\u0027, u\u0027information\u0027, u\u0027between\u0027, u\u0027systems.\u0027, u\u0027This\u0027, u\u0027problem\u0027, u\u0027space\u0027, u\u0027has\u0027, u\u0027been\u0027, u\u0027around\u0027, u\u0027ever\u0027, u\u0027since\u0027, u\u0027enterprises\u0027, u\u0027had\u0027, u\u0027more\u0027, u\u0027than\u0027, u\u0027one\u0027, u\u0027system,\u0027, u\u0027where\u0027, u\u0027some\u0027, u\u0027of\u0027, u\u0027the\u0027, u\u0027systems\u0027, u\u0027created\u0027, u\u0027data\u0027, u\u0027and\u0027, u\u0027some\u0027, u\u0027of\u0027, u\u0027the\u0027, u\u0027systems\u0027, u\u0027consumed\u0027, u\u0027data.\u0027, u\u0027The\u0027, u\u0027problems\u0027, u\u0027and\u0027, u\u0027solution\u0027, u\u0027patterns\u0027, u\u0027that\u0027, u\u0027emerged\u0027, u\u0027have\u0027, u\u0027been\u0027, u\u0027discussed\u0027, u\u0027and\u0027, u\u0027articulated\u0027, u\u0027extensively.\u0027, u\u0027A\u0027, u\u0027comprehensive\u0027, u\u0027and\u0027, u\u0027readily\u0027, u\u0027consumed\u0027, u\u0027form\u0027, u\u0027is\u0027, u\u0027found\u0027]\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_1740542201",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Remove Empty Words",
+      "text": "%pyspark\n\nwordsFiltered \u003d words.filter(lambda w: len(w) \u003e 0)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_270532773",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Get Total Number of Words",
+      "text": "%pyspark\n\nprint wordsFiltered.count()     # using a count() action",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "2517\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "2517\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_229739488",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n#### Word Counts\n\nLet\u0027s see what are the most popular words by performing a word count using `map()` and `reduceByKey()` transformations to create tuples of type (word, count).",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch4\u003eWord Counts\u003c/h4\u003e\n\u003cp\u003eLet\u0027s see what are the most popular words by performing a word count using \u003ccode\u003emap()\u003c/code\u003e and \u003ccode\u003ereduceByKey()\u003c/code\u003e transformations to create tuples of type (word, count).\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch4\u003eWord Counts\u003c/h4\u003e\n\u003cp\u003eLet\u0027s see what are the most popular words by performing a word count using \u003ccode\u003emap()\u003c/code\u003e and \u003ccode\u003ereduceByKey()\u003c/code\u003e transformations to create tuples of type (word, count).\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_55977510",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Word count with a RDD",
+      "text": "%pyspark\n\nwordCounts \u003d wordsFiltered.map(lambda word: (word, 1)).reduceByKey(lambda a,b: a+b)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "tableHide": false,
+        "title": false,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_216173184",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n#### View Word Count Tuples\nNow let\u0027s take a look at top 100 words in descending order with a `takeOrdered()` action.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch4\u003eView Word Count Tuples\u003c/h4\u003e\n\u003cp\u003eNow let\u0027s take a look at top 100 words in descending order with a \u003ccode\u003etakeOrdered()\u003c/code\u003e action.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch4\u003eView Word Count Tuples\u003c/h4\u003e\n\u003cp\u003eNow let\u0027s take a look at top 100 words in descending order with a \u003ccode\u003etakeOrdered()\u003c/code\u003e action.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_1029129342",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\nprint wordCounts.takeOrdered(100, lambda (w,c): -c)\n",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[(u\u0027the\u0027, 110), (u\u0027of\u0027, 94), (u\u0027and\u0027, 89), (u\u0027to\u0027, 84), (u\u0027is\u0027, 62), (u\u0027a\u0027, 60), (u\u0027NiFi\u0027, 41), (u\u0027as\u0027, 32), (u\u0027The\u0027, 28), (u\u0027be\u0027, 26), (u\u0027in\u0027, 25), (u\u0027are\u0027, 22), (u\u0027it\u0027, 22), (u\u0027data\u0027, 20), (u\u0027that\u0027, 20), (u\u0027for\u0027, 19), (u\u0027can\u0027, 19), (u\u0027or\u0027, 19), (u\u0027on\u0027, 17), (u\u0027system\u0027, 16), (u\u0027which\u0027, 14), (u\u0027dataflow\u0027, 12), (u\u0027will\u0027, 11), (u\u0027flow\u0027, 11), (u\u0027more\u0027, 11), (u\u0027at\u0027, 11), (u\u0027FlowFile\u0027, 9), (u\u0027given\u0027, 9), (u\u0027Flow\u0027, 9), (u\u0027one\u0027, 9), (u\u0027very\u0027, 8), (u\u0027content\u0027, 8), (u\u0027This\u0027, 8), (u\u0027with\u0027, 8), (u\u0027some\u0027, 8), (u\u0027within\u0027, 8), (u\u0027all\u0027, 7), (u\u0027repository\u0027, 7), (u\u0027use\u0027, 7), (u\u0027A\u0027, 7), (u\u0027Controller\u0027, 7), (u\u0027where\u0027, 7), (u\u0027how\u0027, 7), (u\u0027then\u0027, 7), (u\u0027other\u0027, 7), (u\u0027even\u0027, 6), (u\u0027through\u0027, 6), (u\u0027Repository\u0027, 6), (u\u0027make\u0027, 6), (u\u0027well\u0027, 6), (u\u0027each\u0027, 6), (u\u0027their\u0027, 6), (u\u0027between\u0027, 6), (u\u0027an\u0027, 6), (u\u0027threads\u0027, 5), (u\u0027change\u0027, 5), (u\u0027allow\u0027, 5), (u\u0027they\u0027, 5), (u\u0027For\u0027, 5), (u\u0027Data\u0027, 5), (u\u0027these\u0027, 5), (u\u0027processes\u0027, 5), (u\u0027flows\u0027, 5), (u\u0027specific\u0027, 5), (u\u0027default\u0027, 5), (u\u0027becomes\u0027, 5), (u\u0027designed\u0027, 5), (u\u0027there\u0027, 5), (u\u0027also\u0027, 5), (u\u0027should\u0027, 5), (u\u0027many\u0027, 5), (u\u0027point\u0027, 5), (u\u0027cluster\u0027, 5), (u\u0027by\u0027, 5), (u\u0027those\u0027, 4), (u\u0027design\u0027, 4), (u\u0027These\u0027, 4), (u\u0027when\u0027, 4), (u\u0027extensions\u0027, 4), (u\u0027effective\u0027, 4), (u\u0027so\u0027, 4), (u\u0027have\u0027, 4), (u\u0027able\u0027, 4), (u\u0027Nodes\u0027, 4), (u\u0027only\u0027, 4), (u\u0027been\u0027, 4), (u\u0027components\u0027, 4), (u\u0027NiFi\\u2019s\u0027, 4), (u\u0027JVM\u0027, 4), (u\u0027host\u0027, 4), (u\u0027about\u0027, 4), (u\u0027extension\u0027, 4), (u\u0027Processors\u0027, 4), (u\u0027new\u0027, 4), (u\u0027such\u0027, 4), (u\u0027NCM\u0027, 4), (u\u0027its\u0027, 4), (u\u0027systems\u0027, 4), (u\u0027Architecture\u0027, 4), (u\u0027provenance\u0027, 4)]\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "[(u\u0027the\u0027, 110), (u\u0027of\u0027, 94), (u\u0027and\u0027, 89), (u\u0027to\u0027, 84), (u\u0027is\u0027, 62), (u\u0027a\u0027, 60), (u\u0027NiFi\u0027, 41), (u\u0027as\u0027, 32), (u\u0027The\u0027, 28), (u\u0027be\u0027, 26), (u\u0027in\u0027, 25), (u\u0027are\u0027, 22), (u\u0027it\u0027, 22), (u\u0027data\u0027, 20), (u\u0027that\u0027, 20), (u\u0027for\u0027, 19), (u\u0027can\u0027, 19), (u\u0027or\u0027, 19), (u\u0027on\u0027, 17), (u\u0027system\u0027, 16), (u\u0027which\u0027, 14), (u\u0027dataflow\u0027, 12), (u\u0027will\u0027, 11), (u\u0027flow\u0027, 11), (u\u0027more\u0027, 11), (u\u0027at\u0027, 11), (u\u0027FlowFile\u0027, 9), (u\u0027given\u0027, 9), (u\u0027Flow\u0027, 9), (u\u0027one\u0027, 9), (u\u0027very\u0027, 8), (u\u0027content\u0027, 8), (u\u0027This\u0027, 8), (u\u0027with\u0027, 8), (u\u0027some\u0027, 8), (u\u0027within\u0027, 8), (u\u0027all\u0027, 7), (u\u0027repository\u0027, 7), (u\u0027use\u0027, 7), (u\u0027A\u0027, 7), (u\u0027Controller\u0027, 7), (u\u0027where\u0027, 7), (u\u0027how\u0027, 7), (u\u0027then\u0027, 7), (u\u0027other\u0027, 7), (u\u0027even\u0027, 6), (u\u0027through\u0027, 6), (u\u0027Repository\u0027, 6), (u\u0027make\u0027, 6), (u\u0027well\u0027, 6), (u\u0027each\u0027, 6), (u\u0027their\u0027, 6), (u\u0027between\u0027, 6), (u\u0027an\u0027, 6), (u\u0027threads\u0027, 5), (u\u0027change\u0027, 5), (u\u0027allow\u0027, 5), (u\u0027they\u0027, 5), (u\u0027For\u0027, 5), (u\u0027Data\u0027, 5), (u\u0027these\u0027, 5), (u\u0027processes\u0027, 5), (u\u0027flows\u0027, 5), (u\u0027specific\u0027, 5), (u\u0027default\u0027, 5), (u\u0027becomes\u0027, 5), (u\u0027designed\u0027, 5), (u\u0027there\u0027, 5), (u\u0027also\u0027, 5), (u\u0027should\u0027, 5), (u\u0027many\u0027, 5), (u\u0027point\u0027, 5), (u\u0027cluster\u0027, 5), (u\u0027by\u0027, 5), (u\u0027those\u0027, 4), (u\u0027design\u0027, 4), (u\u0027These\u0027, 4), (u\u0027when\u0027, 4), (u\u0027extensions\u0027, 4), (u\u0027effective\u0027, 4), (u\u0027so\u0027, 4), (u\u0027have\u0027, 4), (u\u0027able\u0027, 4), (u\u0027Nodes\u0027, 4), (u\u0027only\u0027, 4), (u\u0027been\u0027, 4), (u\u0027components\u0027, 4), (u\u0027NiFi\\u2019s\u0027, 4), (u\u0027JVM\u0027, 4), (u\u0027host\u0027, 4), (u\u0027about\u0027, 4), (u\u0027extension\u0027, 4), (u\u0027Processors\u0027, 4), (u\u0027new\u0027, 4), (u\u0027such\u0027, 4), (u\u0027NCM\u0027, 4), (u\u0027its\u0027, 4), (u\u0027systems\u0027, 4), (u\u0027Architecture\u0027, 4), (u\u0027provenance\u0027, 4)]\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_743558056",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n#### Filter out infrequent words\nWe\u0027ll use `filter()` transformation to filter out words that occur less than five times.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch4\u003eFilter out infrequent words\u003c/h4\u003e\n\u003cp\u003eWe\u0027ll use \u003ccode\u003efilter()\u003c/code\u003e transformation to filter out words that occur less than five times.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch4\u003eFilter out infrequent words\u003c/h4\u003e\n\u003cp\u003eWe\u0027ll use \u003ccode\u003efilter()\u003c/code\u003e transformation to filter out words that occur less than five times.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955025_1915387400",
+      "id": "20160331-233830_772905299",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\nfilteredWordCounts \u003d wordCounts.filter(lambda (w,c): c \u003e\u003d 5)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_90779590",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Take a Look at Results",
+      "text": "%pyspark\n\nprint filteredWordCounts.collect()   # we\u0027re using a collect() action to pull everything back to the Spark driver",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "[(u\u0027all\u0027, 7), (u\u0027very\u0027, 8), (u\u0027even\u0027, 6), (u\u0027repository\u0027, 7), (u\u0027FlowFile\u0027, 9), (u\u0027threads\u0027, 5), (u\u0027change\u0027, 5), (u\u0027use\u0027, 7), (u\u0027A\u0027, 7), (u\u0027data\u0027, 20), (u\u0027a\u0027, 60), (u\u0027allow\u0027, 5), (u\u0027through\u0027, 6), (u\u0027they\u0027, 5), (u\u0027content\u0027, 8), (u\u0027This\u0027, 8), (u\u0027given\u0027, 9), (u\u0027For\u0027, 5), (u\u0027Repository\u0027, 6), (u\u0027Data\u0027, 5), (u\u0027and\u0027, 89), (u\u0027these\u0027, 5), (u\u0027which\u0027, 14), (u\u0027The\u0027, 28), (u\u0027NiFi\u0027, 41), (u\u0027with\u0027, 8), (u\u0027Controller\u0027, 7), (u\u0027processes\u0027, 5), (u\u0027where\u0027, 7), (u\u0027Flow\u0027, 9), (u\u0027will\u0027, 11), (u\u0027is\u0027, 62), (u\u0027make\u0027, 6), (u\u0027flows\u0027, 5), (u\u0027well\u0027, 6), (u\u0027the\u0027, 110), (u\u0027specific\u0027, 5), (u\u0027some\u0027, 8), (u\u0027for\u0027, 19), (u\u0027dataflow\u0027, 12), (u\u0027default\u0027, 5), (u\u0027flow\u0027, 11), (u\u0027as\u0027, 32), (u\u0027to\u0027, 84), (u\u0027be\u0027, 26), (u\u0027more\u0027, 11), (u\u0027becomes\u0027, 5), (u\u0027can\u0027, 19), (u\u0027how\u0027, 7), (u\u0027designed\u0027, 5), (u\u0027or\u0027, 19), (u\u0027then\u0027, 7), (u\u0027each\u0027, 6), (u\u0027there\u0027, 5), (u\u0027one\u0027, 9), (u\u0027system\u0027, 16), (u\u0027their\u0027, 6), (u\u0027that\u0027, 20), (u\u0027also\u0027, 5), (u\u0027should\u0027, 5), (u\u0027are\u0027, 22), (u\u0027between\u0027, 6), (u\u0027many\u0027, 5), (u\u0027point\u0027, 5), (u\u0027it\u0027, 22), (u\u0027cluster\u0027, 5), (u\u0027in\u0027, 25), (u\u0027by\u0027, 5), (u\u0027on\u0027, 17), (u\u0027of\u0027, 94), (u\u0027within\u0027, 8), (u\u0027an\u0027, 6), (u\u0027at\u0027, 11), (u\u0027other\u0027, 7)]\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "[(u\u0027all\u0027, 7), (u\u0027very\u0027, 8), (u\u0027even\u0027, 6), (u\u0027repository\u0027, 7), (u\u0027FlowFile\u0027, 9), (u\u0027threads\u0027, 5), (u\u0027change\u0027, 5), (u\u0027use\u0027, 7), (u\u0027A\u0027, 7), (u\u0027data\u0027, 20), (u\u0027a\u0027, 60), (u\u0027allow\u0027, 5), (u\u0027through\u0027, 6), (u\u0027they\u0027, 5), (u\u0027content\u0027, 8), (u\u0027This\u0027, 8), (u\u0027given\u0027, 9), (u\u0027For\u0027, 5), (u\u0027Repository\u0027, 6), (u\u0027Data\u0027, 5), (u\u0027and\u0027, 89), (u\u0027these\u0027, 5), (u\u0027which\u0027, 14), (u\u0027The\u0027, 28), (u\u0027NiFi\u0027, 41), (u\u0027with\u0027, 8), (u\u0027Controller\u0027, 7), (u\u0027processes\u0027, 5), (u\u0027where\u0027, 7), (u\u0027Flow\u0027, 9), (u\u0027will\u0027, 11), (u\u0027is\u0027, 62), (u\u0027make\u0027, 6), (u\u0027flows\u0027, 5), (u\u0027well\u0027, 6), (u\u0027the\u0027, 110), (u\u0027specific\u0027, 5), (u\u0027some\u0027, 8), (u\u0027for\u0027, 19), (u\u0027dataflow\u0027, 12), (u\u0027default\u0027, 5), (u\u0027flow\u0027, 11), (u\u0027as\u0027, 32), (u\u0027to\u0027, 84), (u\u0027be\u0027, 26), (u\u0027more\u0027, 11), (u\u0027becomes\u0027, 5), (u\u0027can\u0027, 19), (u\u0027how\u0027, 7), (u\u0027designed\u0027, 5), (u\u0027or\u0027, 19), (u\u0027then\u0027, 7), (u\u0027each\u0027, 6), (u\u0027there\u0027, 5), (u\u0027one\u0027, 9), (u\u0027system\u0027, 16), (u\u0027their\u0027, 6), (u\u0027that\u0027, 20), (u\u0027also\u0027, 5), (u\u0027should\u0027, 5), (u\u0027are\u0027, 22), (u\u0027between\u0027, 6), (u\u0027many\u0027, 5), (u\u0027point\u0027, 5), (u\u0027it\u0027, 22), (u\u0027cluster\u0027, 5), (u\u0027in\u0027, 25), (u\u0027by\u0027, 5), (u\u0027on\u0027, 17), (u\u0027of\u0027, 94), (u\u0027within\u0027, 8), (u\u0027an\u0027, 6), (u\u0027at\u0027, 11), (u\u0027other\u0027, 7)]\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_1024657848",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "",
+      "text": "%md\nNow let\u0027s use `countByKey()` action for another way of returning a word count.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": false,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNow let\u0027s use \u003ccode\u003ecountByKey()\u003c/code\u003e action for another way of returning a word count.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNow let\u0027s use \u003ccode\u003ecountByKey()\u003c/code\u003e action for another way of returning a word count.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_753086043",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\nresult \u003d  words.map(lambda w: (w,1)).countByKey()\n\n# Print type of data structure\nprint type(result)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Py4JJavaError: An error occurred while calling z:org.apache.spark.api.python.PythonRDD.collectAndServe.\n: org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 46.0 failed 4 times, most recent failure: Lost task 0.3 in stage 46.0 (TID 1458, sandbox.hortonworks.com): java.io.FileNotFoundException: File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat sun.reflect.GeneratedConstructorAccessor16.newInstance(Unknown Source)\n\tat sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.lang.reflect.Constructor.newInstance(Constructor.java:526)\n\tat org.apache.hadoop.ipc.RemoteException.instantiateException(RemoteException.java:106)\n\tat org.apache.hadoop.ipc.RemoteException.unwrapRemoteException(RemoteException.java:73)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1238)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1223)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1211)\n\tat org.apache.hadoop.hdfs.DFSInputStream.fetchLocatedBlocksAndGetLastBlockLength(DFSInputStream.java:309)\n\tat org.apache.hadoop.hdfs.DFSInputStream.openInfo(DFSInputStream.java:274)\n\tat org.apache.hadoop.hdfs.DFSInputStream.\u003cinit\u003e(DFSInputStream.java:266)\n\tat org.apache.hadoop.hdfs.DFSClient.open(DFSClient.java:1536)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:329)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystemLinkResolver.resolve(FileSystemLinkResolver.java:81)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem.open(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystem.open(FileSystem.java:782)\n\tat org.apache.hadoop.mapred.LineRecordReader.\u003cinit\u003e(LineRecordReader.java:109)\n\tat org.apache.hadoop.mapred.TextInputFormat.getRecordReader(TextInputFormat.java:67)\n\tat org.apache.spark.rdd.HadoopRDD$$anon$1.\u003cinit\u003e(HadoopRDD.scala:237)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:208)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:101)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.api.python.PythonRDD.compute(PythonRDD.scala:70)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:89)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:227)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\tat java.lang.Thread.run(Thread.java:745)\nCaused by: org.apache.hadoop.ipc.RemoteException(java.io.FileNotFoundException): File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat org.apache.hadoop.ipc.Client.getRpcResponse(Client.java:1552)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1496)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1396)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Invoker.invoke(ProtobufRpcEngine.java:233)\n\tat com.sun.proxy.$Proxy14.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolTranslatorPB.getBlockLocations(ClientNamenodeProtocolTranslatorPB.java:270)\n\tat sun.reflect.GeneratedMethodAccessor34.invoke(Unknown Source)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invokeMethod(RetryInvocationHandler.java:278)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:194)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:176)\n\tat com.sun.proxy.$Proxy15.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1236)\n\t... 30 more\n\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1433)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1421)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1420)\n\tat scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1420)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:801)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:801)\n\tat scala.Option.foreach(Option.scala:236)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:801)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:1642)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1601)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1590)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:622)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1856)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1869)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1882)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1953)\n\tat org.apache.spark.rdd.RDD$$anonfun$collect$1.apply(RDD.scala:934)\n\tat org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:150)\n\tat org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:111)\n\tat org.apache.spark.rdd.RDD.withScope(RDD.scala:323)\n\tat org.apache.spark.rdd.RDD.collect(RDD.scala:933)\n\tat org.apache.spark.api.python.PythonRDD$.collectAndServe(PythonRDD.scala:405)\n\tat org.apache.spark.api.python.PythonRDD.collectAndServe(PythonRDD.scala)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:231)\n\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:381)\n\tat py4j.Gateway.invoke(Gateway.java:259)\n\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:133)\n\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\n\tat py4j.GatewayConnection.run(GatewayConnection.java:209)\n\tat java.lang.Thread.run(Thread.java:745)\nCaused by: java.io.FileNotFoundException: File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat sun.reflect.GeneratedConstructorAccessor16.newInstance(Unknown Source)\n\tat sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.lang.reflect.Constructor.newInstance(Constructor.java:526)\n\tat org.apache.hadoop.ipc.RemoteException.instantiateException(RemoteException.java:106)\n\tat org.apache.hadoop.ipc.RemoteException.unwrapRemoteException(RemoteException.java:73)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1238)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1223)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1211)\n\tat org.apache.hadoop.hdfs.DFSInputStream.fetchLocatedBlocksAndGetLastBlockLength(DFSInputStream.java:309)\n\tat org.apache.hadoop.hdfs.DFSInputStream.openInfo(DFSInputStream.java:274)\n\tat org.apache.hadoop.hdfs.DFSInputStream.\u003cinit\u003e(DFSInputStream.java:266)\n\tat org.apache.hadoop.hdfs.DFSClient.open(DFSClient.java:1536)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:329)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystemLinkResolver.resolve(FileSystemLinkResolver.java:81)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem.open(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystem.open(FileSystem.java:782)\n\tat org.apache.hadoop.mapred.LineRecordReader.\u003cinit\u003e(LineRecordReader.java:109)\n\tat org.apache.hadoop.mapred.TextInputFormat.getRecordReader(TextInputFormat.java:67)\n\tat org.apache.spark.rdd.HadoopRDD$$anon$1.\u003cinit\u003e(HadoopRDD.scala:237)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:208)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:101)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.api.python.PythonRDD.compute(PythonRDD.scala:70)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:89)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:227)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\t... 1 more\nCaused by: org.apache.hadoop.ipc.RemoteException(java.io.FileNotFoundException): File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat org.apache.hadoop.ipc.Client.getRpcResponse(Client.java:1552)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1496)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1396)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Invoker.invoke(ProtobufRpcEngine.java:233)\n\tat com.sun.proxy.$Proxy14.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolTranslatorPB.getBlockLocations(ClientNamenodeProtocolTranslatorPB.java:270)\n\tat sun.reflect.GeneratedMethodAccessor34.invoke(Unknown Source)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invokeMethod(RetryInvocationHandler.java:278)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:194)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:176)\n\tat com.sun.proxy.$Proxy15.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1236)\n\t... 30 more\n\n(\u003cclass \u0027py4j.protocol.Py4JJavaError\u0027\u003e, Py4JJavaError(u\u0027An error occurred while calling z:org.apache.spark.api.python.PythonRDD.collectAndServe.\\n\u0027, JavaObject id\u003do140), \u003ctraceback object at 0x3257c20\u003e)"
+          }
+        ]
+      },
+      "result": {
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "Py4JJavaError: An error occurred while calling z:org.apache.spark.api.python.PythonRDD.collectAndServe.\n: org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 46.0 failed 4 times, most recent failure: Lost task 0.3 in stage 46.0 (TID 1458, sandbox.hortonworks.com): java.io.FileNotFoundException: File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat sun.reflect.GeneratedConstructorAccessor16.newInstance(Unknown Source)\n\tat sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.lang.reflect.Constructor.newInstance(Constructor.java:526)\n\tat org.apache.hadoop.ipc.RemoteException.instantiateException(RemoteException.java:106)\n\tat org.apache.hadoop.ipc.RemoteException.unwrapRemoteException(RemoteException.java:73)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1238)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1223)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1211)\n\tat org.apache.hadoop.hdfs.DFSInputStream.fetchLocatedBlocksAndGetLastBlockLength(DFSInputStream.java:309)\n\tat org.apache.hadoop.hdfs.DFSInputStream.openInfo(DFSInputStream.java:274)\n\tat org.apache.hadoop.hdfs.DFSInputStream.\u003cinit\u003e(DFSInputStream.java:266)\n\tat org.apache.hadoop.hdfs.DFSClient.open(DFSClient.java:1536)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:329)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystemLinkResolver.resolve(FileSystemLinkResolver.java:81)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem.open(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystem.open(FileSystem.java:782)\n\tat org.apache.hadoop.mapred.LineRecordReader.\u003cinit\u003e(LineRecordReader.java:109)\n\tat org.apache.hadoop.mapred.TextInputFormat.getRecordReader(TextInputFormat.java:67)\n\tat org.apache.spark.rdd.HadoopRDD$$anon$1.\u003cinit\u003e(HadoopRDD.scala:237)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:208)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:101)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.api.python.PythonRDD.compute(PythonRDD.scala:70)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:89)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:227)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\tat java.lang.Thread.run(Thread.java:745)\nCaused by: org.apache.hadoop.ipc.RemoteException(java.io.FileNotFoundException): File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat org.apache.hadoop.ipc.Client.getRpcResponse(Client.java:1552)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1496)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1396)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Invoker.invoke(ProtobufRpcEngine.java:233)\n\tat com.sun.proxy.$Proxy14.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolTranslatorPB.getBlockLocations(ClientNamenodeProtocolTranslatorPB.java:270)\n\tat sun.reflect.GeneratedMethodAccessor34.invoke(Unknown Source)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invokeMethod(RetryInvocationHandler.java:278)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:194)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:176)\n\tat com.sun.proxy.$Proxy15.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1236)\n\t... 30 more\n\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1433)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1421)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1420)\n\tat scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1420)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:801)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:801)\n\tat scala.Option.foreach(Option.scala:236)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:801)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.doOnReceive(DAGScheduler.scala:1642)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1601)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1590)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n\tat org.apache.spark.scheduler.DAGScheduler.runJob(DAGScheduler.scala:622)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1856)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1869)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1882)\n\tat org.apache.spark.SparkContext.runJob(SparkContext.scala:1953)\n\tat org.apache.spark.rdd.RDD$$anonfun$collect$1.apply(RDD.scala:934)\n\tat org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:150)\n\tat org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:111)\n\tat org.apache.spark.rdd.RDD.withScope(RDD.scala:323)\n\tat org.apache.spark.rdd.RDD.collect(RDD.scala:933)\n\tat org.apache.spark.api.python.PythonRDD$.collectAndServe(PythonRDD.scala:405)\n\tat org.apache.spark.api.python.PythonRDD.collectAndServe(PythonRDD.scala)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:231)\n\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:381)\n\tat py4j.Gateway.invoke(Gateway.java:259)\n\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:133)\n\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\n\tat py4j.GatewayConnection.run(GatewayConnection.java:209)\n\tat java.lang.Thread.run(Thread.java:745)\nCaused by: java.io.FileNotFoundException: File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat sun.reflect.GeneratedConstructorAccessor16.newInstance(Unknown Source)\n\tat sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)\n\tat java.lang.reflect.Constructor.newInstance(Constructor.java:526)\n\tat org.apache.hadoop.ipc.RemoteException.instantiateException(RemoteException.java:106)\n\tat org.apache.hadoop.ipc.RemoteException.unwrapRemoteException(RemoteException.java:73)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1238)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1223)\n\tat org.apache.hadoop.hdfs.DFSClient.getLocatedBlocks(DFSClient.java:1211)\n\tat org.apache.hadoop.hdfs.DFSInputStream.fetchLocatedBlocksAndGetLastBlockLength(DFSInputStream.java:309)\n\tat org.apache.hadoop.hdfs.DFSInputStream.openInfo(DFSInputStream.java:274)\n\tat org.apache.hadoop.hdfs.DFSInputStream.\u003cinit\u003e(DFSInputStream.java:266)\n\tat org.apache.hadoop.hdfs.DFSClient.open(DFSClient.java:1536)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:329)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem$4.doCall(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystemLinkResolver.resolve(FileSystemLinkResolver.java:81)\n\tat org.apache.hadoop.hdfs.DistributedFileSystem.open(DistributedFileSystem.java:325)\n\tat org.apache.hadoop.fs.FileSystem.open(FileSystem.java:782)\n\tat org.apache.hadoop.mapred.LineRecordReader.\u003cinit\u003e(LineRecordReader.java:109)\n\tat org.apache.hadoop.mapred.TextInputFormat.getRecordReader(TextInputFormat.java:67)\n\tat org.apache.spark.rdd.HadoopRDD$$anon$1.\u003cinit\u003e(HadoopRDD.scala:237)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:208)\n\tat org.apache.spark.rdd.HadoopRDD.compute(HadoopRDD.scala:101)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:38)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.api.python.PythonRDD.compute(PythonRDD.scala:70)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:313)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:277)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:66)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:89)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:227)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\t... 1 more\nCaused by: org.apache.hadoop.ipc.RemoteException(java.io.FileNotFoundException): File does not exist: /tmp/About-Apache-NiFi.txt\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:71)\n\tat org.apache.hadoop.hdfs.server.namenode.INodeFile.valueOf(INodeFile.java:61)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocationsInt(FSNamesystem.java:1860)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1831)\n\tat org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getBlockLocations(FSNamesystem.java:1744)\n\tat org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getBlockLocations(NameNodeRpcServer.java:693)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.getBlockLocations(ClientNamenodeProtocolServerSideTranslatorPB.java:373)\n\tat org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:640)\n\tat org.apache.hadoop.ipc.RPC$Server.call(RPC.java:982)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2313)\n\tat org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2309)\n\tat java.security.AccessController.doPrivileged(Native Method)\n\tat javax.security.auth.Subject.doAs(Subject.java:415)\n\tat org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1724)\n\tat org.apache.hadoop.ipc.Server$Handler.run(Server.java:2307)\n\n\tat org.apache.hadoop.ipc.Client.getRpcResponse(Client.java:1552)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1496)\n\tat org.apache.hadoop.ipc.Client.call(Client.java:1396)\n\tat org.apache.hadoop.ipc.ProtobufRpcEngine$Invoker.invoke(ProtobufRpcEngine.java:233)\n\tat com.sun.proxy.$Proxy14.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolTranslatorPB.getBlockLocations(ClientNamenodeProtocolTranslatorPB.java:270)\n\tat sun.reflect.GeneratedMethodAccessor34.invoke(Unknown Source)\n\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n\tat java.lang.reflect.Method.invoke(Method.java:606)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invokeMethod(RetryInvocationHandler.java:278)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:194)\n\tat org.apache.hadoop.io.retry.RetryInvocationHandler.invoke(RetryInvocationHandler.java:176)\n\tat com.sun.proxy.$Proxy15.getBlockLocations(Unknown Source)\n\tat org.apache.hadoop.hdfs.DFSClient.callGetBlockLocations(DFSClient.java:1236)\n\t... 30 more\n\n(\u003cclass \u0027py4j.protocol.Py4JJavaError\u0027\u003e, Py4JJavaError(u\u0027An error occurred while calling z:org.apache.spark.api.python.PythonRDD.collectAndServe.\\n\u0027, JavaObject id\u003do140), \u003ctraceback object at 0x3257c20\u003e)"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_1995992930",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n**Note** that the **result** is an **unordered dictionary of type {word, count}**.\nSince this is a small set we can apply a simple (non-parallelizeable) python built-in function.\n",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003e\u003cstrong\u003eNote\u003c/strong\u003e that the \u003cstrong\u003eresult\u003c/strong\u003e is an \u003cstrong\u003eunordered dictionary of type {word, count}\u003c/strong\u003e.\n\u003cbr  /\u003eSince this is a small set we can apply a simple (non-parallelizeable) python built-in function.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003e\u003cstrong\u003eNote\u003c/strong\u003e that the \u003cstrong\u003eresult\u003c/strong\u003e is an \u003cstrong\u003eunordered dictionary of type {word, count}\u003c/strong\u003e.\n\u003cbr  /\u003eSince this is a small set we can apply a simple (non-parallelizeable) python built-in function.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_811124723",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nTake a look at first 20 items in our dictionary.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eTake a look at first 20 items in our dictionary.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eTake a look at first 20 items in our dictionary.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_347028305",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n# Print first 20 items\nprint result.items()[0:20]",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-7062069166207434177.py\", line 239, in \u003cmodule\u003e\n    eval(compiledCode)\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\nNameError: name \u0027result\u0027 is not defined\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-7062069166207434177.py\", line 239, in \u003cmodule\u003e\n    eval(compiledCode)\n  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\nNameError: name \u0027result\u0027 is not defined\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_2086620530",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nApply a python `sorted()` function on the **result** dictionary values.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eApply a python \u003ccode\u003esorted()\u003c/code\u003e function on the \u003cstrong\u003eresult\u003c/strong\u003e dictionary values.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eApply a python \u003ccode\u003esorted()\u003c/code\u003e function on the \u003cstrong\u003eresult\u003c/strong\u003e dictionary values.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955026_1916541647",
+      "id": "20160331-233830_1423292200",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\nimport operator\n\n# Sort in descending order\nsortedResult \u003d sorted(result.items(), key\u003doperator.itemgetter(1), reverse\u003dTrue)\n\n# Print top 20 items\nprint sortedResult[0:20]",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-7062069166207434177.py\", line 239, in \u003cmodule\u003e\n    eval(compiledCode)\n  File \"\u003cstring\u003e\", line 2, in \u003cmodule\u003e\nNameError: name \u0027result\u0027 is not defined\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-7062069166207434177.py\", line 239, in \u003cmodule\u003e\n    eval(compiledCode)\n  File \"\u003cstring\u003e\", line 2, in \u003cmodule\u003e\nNameError: name \u0027result\u0027 is not defined\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_451661467",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Part 2\n#### Introduction to DataFrames and SparkSQL",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch2\u003ePart 2\u003c/h2\u003e\n\u003ch4\u003eIntroduction to DataFrames and SparkSQL\u003c/h4\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003ePart 2\u003c/h2\u003e\n\u003ch4\u003eIntroduction to DataFrames and SparkSQL\u003c/h4\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_1867067371",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nIn this section we will cover the concept of a DataFrame. You will convert RDDs from a previous section and then use higher level \noperations to demonstrate a different way of counting words. Then you will register a temporary table and perform a word count by \nexecuting a SQL query on that table.\n#\nBy the end of the section you will have learned higher-level Spark abstractions that hide lower-level details, speed up prototyping and execution. ",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eIn this section we will cover the concept of a DataFrame. You will convert RDDs from a previous section and then use higher level\n\u003cbr  /\u003eoperations to demonstrate a different way of counting words. Then you will register a temporary table and perform a word count by\n\u003cbr  /\u003eexecuting a SQL query on that table.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy the end of the section you will have learned higher-level Spark abstractions that hide lower-level details, speed up prototyping and execution.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eIn this section we will cover the concept of a DataFrame. You will convert RDDs from a previous section and then use higher level\n\u003cbr  /\u003eoperations to demonstrate a different way of counting words. Then you will register a temporary table and perform a word count by\n\u003cbr  /\u003eexecuting a SQL query on that table.\u003c/p\u003e\n\u003ch1\u003e\u003c/h1\u003e\n\u003cp\u003eBy the end of the section you will have learned higher-level Spark abstractions that hide lower-level details, speed up prototyping and execution.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_770254433",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "DataFrame",
+      "text": "%md\nA DataFrame is a distributed collection of data organized into named columns. It is conceptually equivalent to a table in a relational database or a data frame in R/Python, but with richer optimizations under the hood. DataFrames can be constructed from a wide array of sources such as: structured data files, tables in Hive, external databases, or existing RDDs. [See SparkSQL docs for more info](http://spark.apache.org/docs/latest/sql-programming-guide.html#dataframes).",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eA DataFrame is a distributed collection of data organized into named columns. It is conceptually equivalent to a table in a relational database or a data frame in R/Python, but with richer optimizations under the hood. DataFrames can be constructed from a wide array of sources such as: structured data files, tables in Hive, external databases, or existing RDDs. \u003ca href\u003d\"http://spark.apache.org/docs/latest/sql-programming-guide.html#dataframes\"\u003eSee SparkSQL docs for more info\u003c/a\u003e.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eA DataFrame is a distributed collection of data organized into named columns. It is conceptually equivalent to a table in a relational database or a data frame in R/Python, but with richer optimizations under the hood. DataFrames can be constructed from a wide array of sources such as: structured data files, tables in Hive, external databases, or existing RDDs. \u003ca href\u003d\"http://spark.apache.org/docs/latest/sql-programming-guide.html#dataframes\"\u003eSee SparkSQL docs for more info\u003c/a\u003e.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_634831315",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nTransform your RDD into a DataFrame and perform DataFrame specific operations.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eTransform your RDD into a DataFrame and perform DataFrame specific operations.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eTransform your RDD into a DataFrame and perform DataFrame specific operations.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_911152909",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Word Count with a DataFrame",
+      "text": "%pyspark\n\n# First, let\u0027s transform our RDD to a DataFrame.\n# We will use a Row to define column names.\nwordsCountsDF \u003d (filteredWordCounts.map(lambda (w, c): \n                Row(word\u003dw,\n                    count\u003dc))\n                .toDF())\n\n# Print schema\nwordsCountsDF.printSchema()\n\n# Output: As you can see, the count and word types have been inferred without having to explicitly define long and string types respectively.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- count: long (nullable \u003d true)\n |-- word: string (nullable \u003d true)\n\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "root\n |-- count: long (nullable \u003d true)\n |-- word: string (nullable \u003d true)\n\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_41054806",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Show top 20 rows",
+      "text": "%pyspark\n\n# Show top 20 rows\nwordsCountsDF.show()",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----+----------+\n|count|      word|\n+-----+----------+\n|    7|       all|\n|    8|      very|\n|    6|      even|\n|    7|repository|\n|    9|  FlowFile|\n|    5|   threads|\n|    5|    change|\n|    7|       use|\n|    7|         A|\n|   20|      data|\n|   60|         a|\n|    5|     allow|\n|    6|   through|\n|    5|      they|\n|    8|   content|\n|    8|      This|\n|    9|     given|\n|    5|       For|\n|    6|Repository|\n|    5|      Data|\n+-----+----------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "+-----+----------+\n|count|      word|\n+-----+----------+\n|    7|       all|\n|    8|      very|\n|    6|      even|\n|    7|repository|\n|    9|  FlowFile|\n|    5|   threads|\n|    5|    change|\n|    7|       use|\n|    7|         A|\n|   20|      data|\n|   60|         a|\n|    5|     allow|\n|    6|   through|\n|    5|      they|\n|    8|   content|\n|    8|      This|\n|    9|     given|\n|    5|       For|\n|    6|Repository|\n|    5|      Data|\n+-----+----------+\nonly showing top 20 rows\n\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_665873755",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Register a Temp Table",
+      "text": "%pyspark\n\nwordsCountsDF.registerTempTable(\"word_counts\")",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_802915768",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nNow we can query the temporary `word_counts` table with a SQL statement.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNow we can query the temporary \u003ccode\u003eword_counts\u003c/code\u003e table with a SQL statement.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNow we can query the temporary \u003ccode\u003eword_counts\u003c/code\u003e table with a SQL statement.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955027_1916156898",
+      "id": "20160331-233830_1965558675",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nTo execute a SparkSQL query we prepend a block of SQL code with a `%sql` line.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eTo execute a SparkSQL query we prepend a block of SQL code with a \u003ccode\u003e%sql\u003c/code\u003e line.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eTo execute a SparkSQL query we prepend a block of SQL code with a \u003ccode\u003e%sql\u003c/code\u003e line.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_403708924",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "",
+      "text": "%sql\n\n-- Display word counts in descending order\nSELECT word, count FROM word_counts ORDER BY count DESC",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "tableHide": false,
+        "title": false,
+        "editorMode": "ace/mode/sql",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [
+                {
+                  "name": "word",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [],
+              "groups": [],
+              "scatter": {
+                "xAxis": {
+                  "name": "word",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "word\tcount\nthe\t110\nof\t94\nand\t89\nto\t84\nis\t62\na\t60\nNiFi\t41\nas\t32\nThe\t28\nbe\t26\nin\t25\nare\t22\nit\t22\ndata\t20\nthat\t20\ncan\t19\nfor\t19\nor\t19\non\t17\nsystem\t16\nwhich\t14\ndataflow\t12\nflow\t11\nmore\t11\nwill\t11\nat\t11\nFlow\t9\ngiven\t9\none\t9\nFlowFile\t9\nvery\t8\nThis\t8\nsome\t8\ncontent\t8\nwith\t8\nwithin\t8\nA\t7\nother\t7\nController\t7\nall\t7\nthen\t7\nhow\t7\nwhere\t7\nuse\t7\nrepository\t7\nthrough\t6\nbetween\t6\nmake\t6\nan\t6\neven\t6\neach\t6\ntheir\t6\nRepository\t6\nwell\t6\nthreads\t5\nchange\t5\nthere\t5\nallow\t5\nprocesses\t5\nmany\t5\nalso\t5\nshould\t5\nthey\t5\nflows\t5\nbecomes\t5\npoint\t5\nFor\t5\nData\t5\nspecific\t5\ndesigned\t5\ncluster\t5\nby\t5\nthese\t5\ndefault\t5\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "word\tcount\nthe\t110\nof\t94\nand\t89\nto\t84\nis\t62\na\t60\nNiFi\t41\nas\t32\nThe\t28\nbe\t26\nin\t25\nare\t22\nit\t22\ndata\t20\nthat\t20\ncan\t19\nfor\t19\nor\t19\non\t17\nsystem\t16\nwhich\t14\ndataflow\t12\nflow\t11\nmore\t11\nwill\t11\nat\t11\nFlow\t9\ngiven\t9\none\t9\nFlowFile\t9\nvery\t8\nThis\t8\nsome\t8\ncontent\t8\nwith\t8\nwithin\t8\nA\t7\nother\t7\nController\t7\nall\t7\nthen\t7\nhow\t7\nwhere\t7\nuse\t7\nrepository\t7\nthrough\t6\nbetween\t6\nmake\t6\nan\t6\neven\t6\neach\t6\ntheir\t6\nRepository\t6\nwell\t6\nthreads\t5\nchange\t5\nthere\t5\nallow\t5\nprocesses\t5\nmany\t5\nalso\t5\nshould\t5\nthey\t5\nflows\t5\nbecomes\t5\npoint\t5\nFor\t5\nData\t5\nspecific\t5\ndesigned\t5\ncluster\t5\nby\t5\nthese\t5\ndefault\t5\n",
+        "comment": "",
+        "msgTable": [
+          [
+            {
+              "key": "count",
+              "value": "the"
+            },
+            {
+              "key": "count",
+              "value": "110"
+            }
+          ],
+          [
+            {
+              "value": "of"
+            },
+            {
+              "value": "94"
+            }
+          ],
+          [
+            {
+              "value": "and"
+            },
+            {
+              "value": "89"
+            }
+          ],
+          [
+            {
+              "value": "to"
+            },
+            {
+              "value": "84"
+            }
+          ],
+          [
+            {
+              "value": "is"
+            },
+            {
+              "value": "62"
+            }
+          ],
+          [
+            {
+              "value": "a"
+            },
+            {
+              "value": "60"
+            }
+          ],
+          [
+            {
+              "value": "NiFi"
+            },
+            {
+              "value": "41"
+            }
+          ],
+          [
+            {
+              "value": "as"
+            },
+            {
+              "value": "32"
+            }
+          ],
+          [
+            {
+              "value": "The"
+            },
+            {
+              "value": "28"
+            }
+          ],
+          [
+            {
+              "value": "be"
+            },
+            {
+              "value": "26"
+            }
+          ],
+          [
+            {
+              "value": "in"
+            },
+            {
+              "value": "25"
+            }
+          ],
+          [
+            {
+              "value": "are"
+            },
+            {
+              "value": "22"
+            }
+          ],
+          [
+            {
+              "value": "it"
+            },
+            {
+              "value": "22"
+            }
+          ],
+          [
+            {
+              "value": "data"
+            },
+            {
+              "value": "20"
+            }
+          ],
+          [
+            {
+              "value": "that"
+            },
+            {
+              "value": "20"
+            }
+          ],
+          [
+            {
+              "value": "can"
+            },
+            {
+              "value": "19"
+            }
+          ],
+          [
+            {
+              "value": "for"
+            },
+            {
+              "value": "19"
+            }
+          ],
+          [
+            {
+              "value": "or"
+            },
+            {
+              "value": "19"
+            }
+          ],
+          [
+            {
+              "value": "on"
+            },
+            {
+              "value": "17"
+            }
+          ],
+          [
+            {
+              "value": "system"
+            },
+            {
+              "value": "16"
+            }
+          ],
+          [
+            {
+              "value": "which"
+            },
+            {
+              "value": "14"
+            }
+          ],
+          [
+            {
+              "value": "dataflow"
+            },
+            {
+              "value": "12"
+            }
+          ],
+          [
+            {
+              "value": "flow"
+            },
+            {
+              "value": "11"
+            }
+          ],
+          [
+            {
+              "value": "more"
+            },
+            {
+              "value": "11"
+            }
+          ],
+          [
+            {
+              "value": "will"
+            },
+            {
+              "value": "11"
+            }
+          ],
+          [
+            {
+              "value": "at"
+            },
+            {
+              "value": "11"
+            }
+          ],
+          [
+            {
+              "value": "Flow"
+            },
+            {
+              "value": "9"
+            }
+          ],
+          [
+            {
+              "value": "given"
+            },
+            {
+              "value": "9"
+            }
+          ],
+          [
+            {
+              "value": "one"
+            },
+            {
+              "value": "9"
+            }
+          ],
+          [
+            {
+              "value": "FlowFile"
+            },
+            {
+              "value": "9"
+            }
+          ],
+          [
+            {
+              "value": "very"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "This"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "some"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "content"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "with"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "within"
+            },
+            {
+              "value": "8"
+            }
+          ],
+          [
+            {
+              "value": "A"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "other"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "Controller"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "all"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "then"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "how"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "where"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "use"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "repository"
+            },
+            {
+              "value": "7"
+            }
+          ],
+          [
+            {
+              "value": "through"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "between"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "make"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "an"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "even"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "each"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "their"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "Repository"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "well"
+            },
+            {
+              "value": "6"
+            }
+          ],
+          [
+            {
+              "value": "threads"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "change"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "there"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "allow"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "processes"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "many"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "also"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "should"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "they"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "flows"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "becomes"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "point"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "For"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "Data"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "specific"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "designed"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "cluster"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "by"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "these"
+            },
+            {
+              "value": "5"
+            }
+          ],
+          [
+            {
+              "value": "default"
+            },
+            {
+              "value": "5"
+            }
+          ]
+        ],
+        "columnNames": [
+          {
+            "name": "word",
+            "index": 0.0,
+            "aggr": "sum"
+          },
+          {
+            "name": "count",
+            "index": 1.0,
+            "aggr": "sum"
+          }
+        ],
+        "rows": [
+          [
+            "the",
+            "110"
+          ],
+          [
+            "of",
+            "94"
+          ],
+          [
+            "and",
+            "89"
+          ],
+          [
+            "to",
+            "84"
+          ],
+          [
+            "is",
+            "62"
+          ],
+          [
+            "a",
+            "60"
+          ],
+          [
+            "NiFi",
+            "41"
+          ],
+          [
+            "as",
+            "32"
+          ],
+          [
+            "The",
+            "28"
+          ],
+          [
+            "be",
+            "26"
+          ],
+          [
+            "in",
+            "25"
+          ],
+          [
+            "are",
+            "22"
+          ],
+          [
+            "it",
+            "22"
+          ],
+          [
+            "data",
+            "20"
+          ],
+          [
+            "that",
+            "20"
+          ],
+          [
+            "can",
+            "19"
+          ],
+          [
+            "for",
+            "19"
+          ],
+          [
+            "or",
+            "19"
+          ],
+          [
+            "on",
+            "17"
+          ],
+          [
+            "system",
+            "16"
+          ],
+          [
+            "which",
+            "14"
+          ],
+          [
+            "dataflow",
+            "12"
+          ],
+          [
+            "flow",
+            "11"
+          ],
+          [
+            "more",
+            "11"
+          ],
+          [
+            "will",
+            "11"
+          ],
+          [
+            "at",
+            "11"
+          ],
+          [
+            "Flow",
+            "9"
+          ],
+          [
+            "given",
+            "9"
+          ],
+          [
+            "one",
+            "9"
+          ],
+          [
+            "FlowFile",
+            "9"
+          ],
+          [
+            "very",
+            "8"
+          ],
+          [
+            "This",
+            "8"
+          ],
+          [
+            "some",
+            "8"
+          ],
+          [
+            "content",
+            "8"
+          ],
+          [
+            "with",
+            "8"
+          ],
+          [
+            "within",
+            "8"
+          ],
+          [
+            "A",
+            "7"
+          ],
+          [
+            "other",
+            "7"
+          ],
+          [
+            "Controller",
+            "7"
+          ],
+          [
+            "all",
+            "7"
+          ],
+          [
+            "then",
+            "7"
+          ],
+          [
+            "how",
+            "7"
+          ],
+          [
+            "where",
+            "7"
+          ],
+          [
+            "use",
+            "7"
+          ],
+          [
+            "repository",
+            "7"
+          ],
+          [
+            "through",
+            "6"
+          ],
+          [
+            "between",
+            "6"
+          ],
+          [
+            "make",
+            "6"
+          ],
+          [
+            "an",
+            "6"
+          ],
+          [
+            "even",
+            "6"
+          ],
+          [
+            "each",
+            "6"
+          ],
+          [
+            "their",
+            "6"
+          ],
+          [
+            "Repository",
+            "6"
+          ],
+          [
+            "well",
+            "6"
+          ],
+          [
+            "threads",
+            "5"
+          ],
+          [
+            "change",
+            "5"
+          ],
+          [
+            "there",
+            "5"
+          ],
+          [
+            "allow",
+            "5"
+          ],
+          [
+            "processes",
+            "5"
+          ],
+          [
+            "many",
+            "5"
+          ],
+          [
+            "also",
+            "5"
+          ],
+          [
+            "should",
+            "5"
+          ],
+          [
+            "they",
+            "5"
+          ],
+          [
+            "flows",
+            "5"
+          ],
+          [
+            "becomes",
+            "5"
+          ],
+          [
+            "point",
+            "5"
+          ],
+          [
+            "For",
+            "5"
+          ],
+          [
+            "Data",
+            "5"
+          ],
+          [
+            "specific",
+            "5"
+          ],
+          [
+            "designed",
+            "5"
+          ],
+          [
+            "cluster",
+            "5"
+          ],
+          [
+            "by",
+            "5"
+          ],
+          [
+            "these",
+            "5"
+          ],
+          [
+            "default",
+            "5"
+          ]
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_1235044795",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\nNow let\u0027s take a step back and perform a word count with SQL",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNow let\u0027s take a step back and perform a word count with SQL\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNow let\u0027s take a step back and perform a word count with SQL\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_1968421310",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Convert RDD to a DataFrame and Register a New Temp Table",
+      "text": "%pyspark\n\n# Convert wordsFiltered RDD to a Data Frame\nwordsDF \u003d wordsFiltered.map(lambda w: Row(word\u003dw, count\u003d1)).toDF()",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_1271375135",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Use DataFrame Specific Functions to Determine Word Counts",
+      "text": "%pyspark\n\n(wordsDF.groupBy(\"word\")\n        .sum()\n        .orderBy(\"sum(count)\", ascending\u003d0)\n        .limit(10).show())",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+----+----------+\n|word|sum(count)|\n+----+----------+\n| the|       110|\n|  of|        94|\n| and|        89|\n|  to|        84|\n|  is|        62|\n|   a|        60|\n|NiFi|        41|\n|  as|        32|\n| The|        28|\n|  be|        26|\n+----+----------+\n\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "+----+----------+\n|word|sum(count)|\n+----+----------+\n| the|       110|\n|  of|        94|\n| and|        89|\n|  to|        84|\n|  is|        62|\n|   a|        60|\n|NiFi|        41|\n|  as|        32|\n| The|        28|\n|  be|        26|\n+----+----------+\n\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_539606295",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Register as Temp Table",
+      "text": "%pyspark\n\n# Register as Temp Table\nwordsDF.registerTempTable(\"words\")",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0,
+        "results": []
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": ""
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_339558784",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Word Count using SQL",
+      "text": "%md\n\nNow let\u0027s do a word count using a SQL statement against the `words` table and order the results in a descending order by count.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eNow let\u0027s do a word count using a SQL statement against the \u003ccode\u003ewords\u003c/code\u003e table and order the results in a descending order by count.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eNow let\u0027s do a word count using a SQL statement against the \u003ccode\u003ewords\u003c/code\u003e table and order the results in a descending order by count.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_1100432609",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql\n\nSELECT word, count(*) as count FROM words GROUP BY word ORDER BY count DESC LIMIT 10",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "tableHide": false,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "multiBarChart",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [
+                {
+                  "name": "word",
+                  "index": 0.0,
+                  "aggr": "sum"
+                }
+              ],
+              "values": [
+                {
+                  "name": "count",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "scatter": {
+                "xAxis": {
+                  "name": "word",
+                  "index": 0.0,
+                  "aggr": "sum"
+                },
+                "yAxis": {
+                  "name": "count",
+                  "index": 1.0,
+                  "aggr": "sum"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "word\tcount\nthe\t110\nof\t94\nand\t89\nto\t84\nis\t62\na\t60\nNiFi\t41\nas\t32\nThe\t28\nbe\t26\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "word\tcount\nthe\t110\nof\t94\nand\t89\nto\t84\nis\t62\na\t60\nNiFi\t41\nas\t32\nThe\t28\nbe\t26\n",
+        "comment": "",
+        "msgTable": [
+          [
+            {
+              "key": "count",
+              "value": "the"
+            },
+            {
+              "key": "count",
+              "value": "110"
+            }
+          ],
+          [
+            {
+              "value": "of"
+            },
+            {
+              "value": "94"
+            }
+          ],
+          [
+            {
+              "value": "and"
+            },
+            {
+              "value": "89"
+            }
+          ],
+          [
+            {
+              "value": "to"
+            },
+            {
+              "value": "84"
+            }
+          ],
+          [
+            {
+              "value": "is"
+            },
+            {
+              "value": "62"
+            }
+          ],
+          [
+            {
+              "value": "a"
+            },
+            {
+              "value": "60"
+            }
+          ],
+          [
+            {
+              "value": "NiFi"
+            },
+            {
+              "value": "41"
+            }
+          ],
+          [
+            {
+              "value": "as"
+            },
+            {
+              "value": "32"
+            }
+          ],
+          [
+            {
+              "value": "The"
+            },
+            {
+              "value": "28"
+            }
+          ],
+          [
+            {
+              "value": "be"
+            },
+            {
+              "value": "26"
+            }
+          ]
+        ],
+        "columnNames": [
+          {
+            "name": "word",
+            "index": 0.0,
+            "aggr": "sum"
+          },
+          {
+            "name": "count",
+            "index": 1.0,
+            "aggr": "sum"
+          }
+        ],
+        "rows": [
+          [
+            "the",
+            "110"
+          ],
+          [
+            "of",
+            "94"
+          ],
+          [
+            "and",
+            "89"
+          ],
+          [
+            "to",
+            "84"
+          ],
+          [
+            "is",
+            "62"
+          ],
+          [
+            "a",
+            "60"
+          ],
+          [
+            "NiFi",
+            "41"
+          ],
+          [
+            "as",
+            "32"
+          ],
+          [
+            "The",
+            "28"
+          ],
+          [
+            "be",
+            "26"
+          ]
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955028_1914233154",
+      "id": "20160331-233830_841691499",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "The End",
+      "text": "%md\nYou\u0027ve reached the end of this lab! We hope you\u0027ve been able to successfully complete all the sections and learned a thing or two about Spark.",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "title": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cp\u003eYou\u0027ve reached the end of this lab! We hope you\u0027ve been able to successfully complete all the sections and learned a thing or two about Spark.\u003c/p\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003eYou\u0027ve reached the end of this lab! We hope you\u0027ve been able to successfully complete all the sections and learned a thing or two about Spark.\u003c/p\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955029_1913848405",
+      "id": "20160331-233830_293992216",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n### Additional Resources\nThis is just the beggining of your journey with Spark. Make sure to checkout these additional useful resources:\n\n1. [Hortonworks Community Connection](https://hortonworks.com/community/)\n2. [pySpark Reference Guide](https://spark.apache.org/docs/1.6.1/api/python/pyspark.sql.html)",
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "tableHide": false,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "colWidth": 12.0,
+        "results": [
+          {
+            "graph": {
+              "mode": "table",
+              "height": 300.0,
+              "optionOpen": false,
+              "keys": [],
+              "values": [],
+              "groups": [],
+              "scatter": {}
+            }
+          }
+        ]
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003ch3\u003eAdditional Resources\u003c/h3\u003e\n\u003cp\u003eThis is just the beggining of your journey with Spark. Make sure to checkout these additional useful resources:\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e\u003ca href\u003d\"https://hortonworks.com/community/\"\u003eHortonworks Community Connection\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://spark.apache.org/docs/1.6.1/api/python/pyspark.sql.html\"\u003epySpark Reference Guide\u003c/a\u003e\u003c/li\u003e\n\u003c/ol\u003e\n"
+          }
+        ]
+      },
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch3\u003eAdditional Resources\u003c/h3\u003e\n\u003cp\u003eThis is just the beggining of your journey with Spark. Make sure to checkout these additional useful resources:\u003c/p\u003e\n\u003col\u003e\n\u003cli\u003e\u003ca href\u003d\"https://hortonworks.com/community/\"\u003eHortonworks Community Connection\u003c/a\u003e\u003c/li\u003e\n\u003cli\u003e\u003ca href\u003d\"https://spark.apache.org/docs/1.6.1/api/python/pyspark.sql.html\"\u003epySpark Reference Guide\u003c/a\u003e\u003c/li\u003e\n\u003c/ol\u003e\n"
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955029_1913848405",
+      "id": "20160331-233830_1914786212",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "dateUpdated": "Nov 18, 2016 1:52:35 AM",
+      "config": {
+        "enabled": true,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala",
+        "colWidth": 12.0
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1479451955029_1913848405",
+      "id": "20160331-233830_200815067",
+      "dateCreated": "Nov 18, 2016 1:52:35 AM",
+      "status": "READY",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "999 Getting Started/ Labs / Spark 1.6.x / Data Worker / Python / 101 - Intro to Spark",
+  "id": "2C23PDD5H",
+  "angularObjects": {},
+  "config": {
+    "looknfeel": "default"
+  },
+  "info": {}
+}
