@@ -1,0 +1,602 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n# SparkNLP - Notebook http://nlp.johnsnowlabs.com/notebooks.html #\n\n## Sentiment Analysis using PySpark JSL NLP ##\n\nThe following code will produce an entire machine learning pipeline aiming to retrieve sentiment analysis from a target distributed dataframe (or dataset). This will utilize several annotators required for such analysis and even an optional one (the spell checker, which is of type Token anyways) which is injected in between the sentiment analysis and the tokens it requires. ViveknSentimentAnalysis is the annotator utilized and it is training with two corpus, one containing positive sentiment examples, and another one containing negative examples. Some additional parameters have been used to fine tune the pipeline, and the Finisher transformer makes sure our final result is exactly the sentiment result of every row.\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:08 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "markdown",
+          "editOnDblClick": true
+        },
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "HTML",
+            "data": "\u003cdiv class\u003d\"markdown-body\"\u003e\n\u003ch1\u003eSparkNLP - Notebook \u003ca href\u003d\"http://nlp.johnsnowlabs.com/notebooks.html\"\u003ehttp://nlp.johnsnowlabs.com/notebooks.html\u003c/a\u003e\u003c/h1\u003e\n\u003ch2\u003eSentiment Analysis using PySpark JSL NLP\u003c/h2\u003e\n\u003cp\u003eThe following code will produce an entire machine learning pipeline aiming to retrieve sentiment analysis from a target distributed dataframe (or dataset). This will utilize several annotators required for such analysis and even an optional one (the spell checker, which is of type Token anyways) which is injected in between the sentiment analysis and the tokens it requires. ViveknSentimentAnalysis is the annotator utilized and it is training with two corpus, one containing positive sentiment examples, and another one containing negative examples. Some additional parameters have been used to fine tune the pipeline, and the Finisher transformer makes sure our final result is exactly the sentiment result of every row.\u003c/p\u003e\n\u003c/div\u003e"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1511994444823_734219346",
+      "id": "20171129-172724_34533962",
+      "dateCreated": "Nov 29, 2017 5:27:24 PM",
+      "dateStarted": "Dec 6, 2017 10:41:08 AM",
+      "dateFinished": "Dec 6, 2017 10:41:08 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n#Imports\n###import sys\n###from pyspark.sql.functions import udf, col\n###from pyspark.sql.types import *\n#from sparknlp.base import DocumentAssembler\n#from sparknlp.base import DocumentAssembler, Finisher\n\nfrom sparknlp.annotator import *\nfrom sparknlp.common import *\nfrom sparknlp.base import *\n\nfrom pyspark.ml import Pipeline\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:11 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python",
+          "editOnDblClick": false
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1511994482903_1785414637",
+      "id": "20171129-172802_1011319721",
+      "dateCreated": "Nov 29, 2017 5:28:02 PM",
+      "dateStarted": "Dec 6, 2017 10:41:11 AM",
+      "dateFinished": "Dec 6, 2017 10:41:11 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n#Load the input data to be annotated\ndata \u003d spark. \\\n        read. \\\n        parquet(\"/home/administrator/spark-nlp-master/src/test/resources/sentiment.parquet\"). \\\n        limit(1000)\ndata.cache()\ndata.count()\ndata.show(100)\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:15 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+\n|itemid|sentiment|                text|\n+------+---------+--------------------+\n|     1|        0|                 ...|\n|     2|        0|                 ...|\n|     3|        1|              omg...|\n|     4|        0|          .. Omga...|\n|     5|        0|         i think ...|\n|     6|        0|         or i jus...|\n|     7|        1|       Juuuuuuuuu...|\n|     8|        0|       Sunny Agai...|\n|     9|        1|      handed in m...|\n|    10|        1|      hmmmm.... i...|\n|    11|        0|      I must thin...|\n|    12|        1|      thanks to a...|\n|    13|        0|      this weeken...|\n|    14|        0|     jb isnt show...|\n|    15|        0|     ok thats it ...|\n|    16|        0|    \u0026lt;-------- ...|\n|    17|        0|    awhhe man.......|\n|    18|        1|    Feeling stran...|\n|    19|        0|    HUGE roll of ...|\n|    20|        0|    I just cut my...|\n|    21|        0|    Very sad abou...|\n|    22|        0|       wompppp wompp|\n|    23|        1|    You\u0027re the on...|\n|    24|        0|   \u0026lt;---Sad lev...|\n|    25|        0|   ...  Headed to...|\n|    26|        0|   BoRinG   ): wh...|\n|    27|        0|   can\u0027t be bothe...|\n|    28|        0|   Feeeling like ...|\n|    29|        1|   goodbye exams,...|\n|    30|        0|   I didn\u0027t reali...|\n|    31|        0|   I hate it when...|\n|    32|        0|   i miss you guy...|\n|    33|        0|  -- Meet your Me...|\n|    34|        0|   My horsie is m...|\n|    35|        0|   No Sat off...N...|\n|    36|        0|   Really Dont Li...|\n|    37|        0|   SOX!     Floyd...|\n|    38|        0|   times by like ...|\n|    39|        1|   uploading pict...|\n|    40|        0|   what type of a...|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|\n|    42|        1|  (: !!!!!! - so ...|\n|    43|        0|       *enough said*|\n|    44|        1|  ... Do I need t...|\n|    45|        1|  ... health clas...|\n|    46|        1|  @ginaaa \u0026lt;3 G...|\n|    47|        0|  @Spiral_galaxy ...|\n|    48|        0| - All Time Low s...|\n|    49|        0|  and the enterta...|\n|    50|        0|  another year of...|\n|    51|        0|  baddest day eve...|\n|    52|        1|  bathroom is cle...|\n|    53|        1|       boom boom pow|\n|    54|        0|      but i\u0027m proud.|\n|    55|        0|  congrats to hel...|\n|    56|        0|  David must be h...|\n|    57|        0|  friends are lea...|\n|    58|        1|  go give ur mom ...|\n|    59|        1|  Going To See Ha...|\n|    60|        0|  Hand quilting i...|\n|    61|        0|  hate u ...  ley...|\n|    62|        1|-  I always get w...|\n|    63|        1|  I bend backwards  |\n|    64|        1|  i get off work ...|\n|    65|        1|  I hate allergie...|\n|    66|        0| - I love you guy...|\n|    67|        0|         I miss Earl|\n|    68|        0|   I miss New Jersey|\n|    69|        0|  I missed the fi...|\n|    70|        0|  I need a U2 fix...|\n|    71|        0|  I never thought...|\n|    72|        0|  I think I may b...|\n|    73|        0|  I think Manuel ...|\n|    74|        0|  I wanna be at h...|\n|    75|        0|  i wanna make my...|\n|    76|        0|  i want a 120gb ...|\n|    77|        0|        i want a hug|\n|    78|        0|  I want Miley to...|\n|    79|        0|  I wanted to sle...|\n|    80|        0|  i was too slow ...|\n|    81|        0|  I will send sun...|\n|    82|        0|  I wish I could ...|\n|    83|        0|  i would be so m...|\n|    84|        0|  idk wat 2 do wh...|\n|    85|        0|  I\u0027m finding the...|\n|    86|        1|  I\u0027m really goin...|\n|    87|        0|  im sick  \u0027cough...|\n|    88|        0|  in cab headed t...|\n|    89|        0|  In case I feel ...|\n|    90|        1|  Jin has a twitter.|\n|    91|        0|  jonas day is al...|\n|    92|        0|  Jus Got Hom Fr....|\n|    93|        1|  just gonna smil...|\n|    94|        1|  Just got home, ...|\n|    95|        0| - Longest night ...|\n|    96|        0|  mi momacita won...|\n|    97|        0|  Mom says I have...|\n|    98|        0|  My new car was ...|\n|    99|        0|  no hang out wit...|\n|   100|        0|  no movie times ...|\n+------+---------+--------------------+\nonly showing top 100 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1511994868553_1595901996",
+      "id": "20171129-173428_1909635232",
+      "dateCreated": "Nov 29, 2017 5:34:28 PM",
+      "dateStarted": "Dec 6, 2017 10:41:15 AM",
+      "dateFinished": "Dec 6, 2017 10:41:15 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n### Define the dataframe                                                               \ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\")\n### Transform input to appropriate schema\nassembled \u003d document_assembler.transform(data)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:21 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "jobName": "paragraph_1511994883410_621333032",
+      "id": "20171129-173443_1530357094",
+      "dateCreated": "Nov 29, 2017 5:34:43 PM",
+      "dateStarted": "Dec 6, 2017 10:41:21 AM",
+      "dateFinished": "Dec 6, 2017 10:41:21 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## BasicAnnotatorsTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\ntokenizer \u003d RegexTokenizer()\\\n            .setOutputCol(\"token\")\nstemmer \u003d Stemmer() \\\n            .setInputCols([\"token\"]) \\\n            .setOutputCol(\"stem\")\nnormalizer \u003d Normalizer() \\\n            .setInputCols([\"stem\"]) \\\n            .setOutputCol(\"normalize\")\ntoken_assembler \u003d TokenAssembler() \\\n            .setInputCols([\"normalize\"]) \\\n            .setOutputCol(\"assembled\")\nfinisher \u003d Finisher() \\\n            .setInputCols([\"assembled\"]) \\\n            .setOutputCols([\"reassembled_view\"])\n\nassembled \u003d document_assembler.transform(data)\ntokenized \u003d tokenizer.transform(assembled)\nstemmed \u003d stemmer.transform(tokenized)\nnormalized \u003d normalizer.transform(stemmed)\nreassembled \u003d token_assembler.transform(normalized)\n\nfinisher.transform(reassembled).show(50)\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:24 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+\n|itemid|sentiment|                text|    reassembled_view|\n+------+---------+--------------------+--------------------+\n|     1|        0|                 ...|for@apl@so@friend...|\n|     2|        0|                 ...|moon@i@miss@trail...|\n|     3|        1|              omg...|    alreadi@it@o@omg|\n|     4|        0|          .. Omga...|gunna@mins@dentis...|\n|     5|        0|         i think ...|cheat@bf@tt@i i@o...|\n|     6|        0|         or i jus...|too@just@or@i@muc...|\n|     7|        1|       Juuuuuuuuu...|chillin@juuuuuuuu...|\n|     8|        0|       Sunny Agai...|sunni@tonight@tv@...|\n|     9|        1|      handed in m...|in@todai@hand@alr...|\n|    10|        1|      hmmmm.... i...|number@she@i@how@...|\n|    11|        0|      I must thin...|must@i@think@posi...|\n|    12|        1|      thanks to a...|in@up@all all@to@...|\n|    13|        0|      this weeken...|weekend@so@suck@f...|\n|    14|        0|     jb isnt show...|in@showe@ani@isnt...|\n|    15|        0|     ok thats it ...|  win@it@that@you@ok|\n|    16|        0|    \u0026lt;-------- ...|feel@i i@now@wai@...|\n|    17|        0|    awhhe man.......|funny@useless@do@...|\n|    18|        1|    Feeling stran...|feel@semison@im@t...|\n|    19|        0|    HUGE roll of ...|thunder@huge@scar...|\n|    20|        0|    I just cut my...|for@in@off@meanti...|\n|    21|        0|    Very sad abou...| sad@iran@about@veri|\n|    22|        0|       wompppp wompp|       wompppp@wompp|\n|    23|        1|    You\u0027re the on...|for@your your@els...|\n|    24|        0|   \u0026lt;---Sad lev...|down@in@comp@all@...|\n|    25|        0|   ...  Headed to...|in@rd@tourni@head...|\n|    26|        0|   BoRinG   ): wh...|wrong@what@him@me...|\n|    27|        0|   can\u0027t be bothe...|spend@rest@just@i...|\n|    28|        0|   Feeeling like ...|feeel@art@have@wa...|\n|    29|        1|   goodbye exams,...|goodby@tonight@ex...|\n|    30|        0|   I didn\u0027t reali...|atleast@warn@it@a...|\n|    31|        0|   I hate it when...|appear@ani@it@tea...|\n|    32|        0|   i miss you guy...|sweater@skinni@ar...|\n|    33|        0|  -- Meet your Me...|meat@httpbitlyssc...|\n|    34|        0|   My horsie is m...|move@saturdai@i@o...|\n|    35|        0|   No Sat off...N...|dai@a@work@to@wee...|\n|    36|        0|   Really Dont Li...|till@in@have@so@d...|\n|    37|        0|   SOX!     Floyd...|floyd@but@reliev@...|\n|    38|        0|   times by like ...|a@by@time@million...|\n|    39|        1|   uploading pict...|on@upload@pictur@...|\n|    40|        0|   what type of a...|fuck@what@spaz@a ...|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|ampampfightiin@wi...|\n|    42|        1|  (: !!!!!! - so ...|in@got@so@a@offic...|\n|    43|        0|       *enough said*|         said@enough|\n|    44|        1|  ... Do I need t...|in@cornel@anyways...|\n|    45|        1|  ... health clas...|health@what@a@jok...|\n|    46|        1|  @ginaaa \u0026lt;3 G...|show@tonight@to@g...|\n|    47|        0|  @Spiral_galaxy ...|muslim@spiralgala...|\n|    48|        0| - All Time Low s...|for@motiv@all@res...|\n|    49|        0|  and the enterta...|entertain@complai...|\n|    50|        0|  another year of...|neither@nor@anoth...|\n+------+---------+--------------------+--------------------+\nonly showing top 50 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512422749219_-405140872",
+      "id": "20171204-162549_446381218",
+      "dateCreated": "Dec 4, 2017 4:25:49 PM",
+      "dateStarted": "Dec 6, 2017 10:41:24 AM",
+      "dateFinished": "Dec 6, 2017 10:41:25 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## RegexMatcherTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\nregex_matcher \u003d RegexMatcher() \\\n            .setStrategy(\"MATCH_ALL\") \\\n            .setRulesPath(\"/home/administrator/spark-nlp-master/src/test/resources/regex-matcher/rules.txt\") \\\n            .setOutputCol(\"regex\")\n\nassembled \u003d document_assembler.transform(data)\n        \nregex_matcher.transform(assembled).show(50)\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:33 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+--------------------+\n|itemid|sentiment|                text|            document|               regex|\n+------+---------+--------------------+--------------------+--------------------+\n|     1|        0|                 ...|[[document,0,60, ...|                  []|\n|     2|        0|                 ...|[[document,0,50, ...|[[regex,28,34,the...|\n|     3|        1|              omg...|[[document,0,36, ...|                  []|\n|     4|        0|          .. Omga...|[[document,0,131,...|                  []|\n|     5|        0|         i think ...|[[document,0,52, ...|                  []|\n|     6|        0|         or i jus...|[[document,0,41, ...|                  []|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|                  []|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|                  []|\n|     9|        1|      handed in m...|[[document,0,52, ...|                  []|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|                  []|\n|    11|        0|      I must thin...|[[document,0,34, ...|                  []|\n|    12|        1|      thanks to a...|[[document,0,60, ...|[[regex,20,29,the...|\n|    13|        0|      this weeken...|[[document,0,35, ...|                  []|\n|    14|        0|     jb isnt show...|[[document,0,42, ...|                  []|\n|    15|        0|     ok thats it ...|[[document,0,24, ...|                  []|\n|    16|        0|    \u0026lt;-------- ...|[[document,0,51, ...|[[regex,25,31,the...|\n|    17|        0|    awhhe man.......|[[document,0,100,...|                  []|\n|    18|        1|    Feeling stran...|[[document,0,81, ...|                  []|\n|    19|        0|    HUGE roll of ...|[[document,0,47, ...|                  []|\n|    20|        0|    I just cut my...|[[document,0,135,...|[[regex,123,134,t...|\n|    21|        0|    Very sad abou...|[[document,0,23, ...|                  []|\n|    22|        0|       wompppp wompp|[[document,0,16, ...|                  []|\n|    23|        1|    You\u0027re the on...|[[document,0,119,...|[[regex,11,18,the...|\n|    24|        0|   \u0026lt;---Sad lev...|[[document,0,136,...|                  []|\n|    25|        0|   ...  Headed to...|[[document,0,133,...|[[regex,48,55,the...|\n|    26|        0|   BoRinG   ): wh...|[[document,0,69, ...|                  []|\n|    27|        0|   can\u0027t be bothe...|[[document,0,105,...|[[regex,43,50,the...|\n|    28|        0|   Feeeling like ...|[[document,0,124,...|                  []|\n|    29|        1|   goodbye exams,...|[[document,0,39, ...|                  []|\n|    30|        0|   I didn\u0027t reali...|[[document,0,72, ...|                  []|\n|    31|        0|   I hate it when...|[[document,0,71, ...|                  []|\n|    32|        0|   i miss you guy...|[[document,0,128,...|                  []|\n|    33|        0|  -- Meet your Me...|[[document,0,39, ...|                  []|\n|    34|        0|   My horsie is m...|[[document,0,42, ...|                  []|\n|    35|        0|   No Sat off...N...|[[document,0,42, ...|                  []|\n|    36|        0|   Really Dont Li...|[[document,0,120,...|                  []|\n|    37|        0|   SOX!     Floyd...|[[document,0,58, ...|                  []|\n|    38|        0|   times by like ...|[[document,0,25, ...|                  []|\n|    39|        1|   uploading pict...|[[document,0,35, ...|                  []|\n|    40|        0|   what type of a...|[[document,0,98, ...|                  []|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|[[document,0,37, ...|                  []|\n|    42|        1|  (: !!!!!! - so ...|[[document,0,128,...|[[regex,79,85,the...|\n|    43|        0|       *enough said*|[[document,0,14, ...|                  []|\n|    44|        1|  ... Do I need t...|[[document,0,108,...|                  []|\n|    45|        1|  ... health clas...|[[document,0,32, ...|                  []|\n|    46|        1|  @ginaaa \u0026lt;3 G...|[[document,0,37, ...|                  []|\n|    47|        0|  @Spiral_galaxy ...|[[document,0,84, ...|                  []|\n|    48|        0| - All Time Low s...|[[document,0,63, ...|[[regex,43,50,the...|\n|    49|        0|  and the enterta...|[[document,0,136,...|[[regex,6,22,the ...|\n|    50|        0|  another year of...|[[document,0,59, ...|                  []|\n+------+---------+--------------------+--------------------+--------------------+\nonly showing top 50 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512422872947_1664190310",
+      "id": "20171204-162752_515353036",
+      "dateCreated": "Dec 4, 2017 4:27:52 PM",
+      "dateStarted": "Dec 6, 2017 10:41:33 AM",
+      "dateFinished": "Dec 6, 2017 10:41:33 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n\n## LemmatizerTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\ntokenizer \u003d RegexTokenizer() \\\n            .setOutputCol(\"token\")\nlemmatizer \u003d Lemmatizer() \\\n            .setInputCols([\"token\"]) \\\n            .setOutputCol(\"lemma\") \\\n            .setDictionary(\"/home/administrator/spark-nlp-master/src/test/resources/lemma-corpus/AntBNC_lemmas_ver_001.txt\")\nassembled \u003d document_assembler.transform(data)\ntokenized \u003d tokenizer.transform(assembled)\n\nlemmatizer.transform(tokenized).show(50)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:38 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+--------------------+--------------------+\n|itemid|sentiment|                text|            document|               token|               lemma|\n+------+---------+--------------------+--------------------+--------------------+--------------------+\n|     1|        0|                 ...|[[document,0,60, ...|[[token,21,22,is,...|[[token,21,22,be,...|\n|     2|        0|                 ...|[[document,0,50, ...|[[token,19,19,I,M...|[[token,19,19,I,M...|\n|     3|        1|              omg...|[[document,0,36, ...|[[token,14,16,omg...|[[token,14,16,omg...|\n|     4|        0|          .. Omga...|[[document,0,131,...|[[token,10,11,..,...|[[token,10,11,..,...|\n|     5|        0|         i think ...|[[document,0,52, ...|[[token,9,9,i,Map...|[[token,9,9,i,Map...|\n|     6|        0|         or i jus...|[[document,0,41, ...|[[token,9,10,or,M...|[[token,9,10,or,M...|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|[[token,7,30,Juuu...|[[token,7,30,Juuu...|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|[[token,7,11,Sunn...|[[token,7,11,Sunn...|\n|     9|        1|      handed in m...|[[document,0,52, ...|[[token,6,11,hand...|[[token,6,11,hand...|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|[[token,6,14,hmmm...|[[token,6,14,hmmm...|\n|    11|        0|      I must thin...|[[document,0,34, ...|[[token,6,6,I,Map...|[[token,6,6,I,Map...|\n|    12|        1|      thanks to a...|[[document,0,60, ...|[[token,6,11,than...|[[token,6,11,than...|\n|    13|        0|      this weeken...|[[document,0,35, ...|[[token,6,9,this,...|[[token,6,9,this,...|\n|    14|        0|     jb isnt show...|[[document,0,42, ...|[[token,5,6,jb,Ma...|[[token,5,6,jb,Ma...|\n|    15|        0|     ok thats it ...|[[document,0,24, ...|[[token,5,6,ok,Ma...|[[token,5,6,ok,Ma...|\n|    16|        0|    \u0026lt;-------- ...|[[document,0,51, ...|[[token,4,15,\u0026lt;...|[[token,4,15,\u0026lt;...|\n|    17|        0|    awhhe man.......|[[document,0,100,...|[[token,4,8,awhhe...|[[token,4,8,awhhe...|\n|    18|        1|    Feeling stran...|[[document,0,81, ...|[[token,4,10,Feel...|[[token,4,10,Feel...|\n|    19|        0|    HUGE roll of ...|[[document,0,47, ...|[[token,4,7,HUGE,...|[[token,4,7,HUGE,...|\n|    20|        0|    I just cut my...|[[document,0,135,...|[[token,4,4,I,Map...|[[token,4,4,I,Map...|\n|    21|        0|    Very sad abou...|[[document,0,23, ...|[[token,4,7,Very,...|[[token,4,7,Very,...|\n|    22|        0|       wompppp wompp|[[document,0,16, ...|[[token,4,10,womp...|[[token,4,10,womp...|\n|    23|        1|    You\u0027re the on...|[[document,0,119,...|[[token,4,9,You\u0027r...|[[token,4,9,You\u0027r...|\n|    24|        0|   \u0026lt;---Sad lev...|[[document,0,136,...|[[token,3,12,\u0026lt;...|[[token,3,12,\u0026lt;...|\n|    25|        0|   ...  Headed to...|[[document,0,133,...|[[token,3,5,...,M...|[[token,3,5,...,M...|\n|    26|        0|   BoRinG   ): wh...|[[document,0,69, ...|[[token,3,8,BoRin...|[[token,3,8,BoRin...|\n|    27|        0|   can\u0027t be bothe...|[[document,0,105,...|[[token,3,7,can\u0027t...|[[token,3,7,can\u0027t...|\n|    28|        0|   Feeeling like ...|[[document,0,124,...|[[token,3,10,Feee...|[[token,3,10,Feee...|\n|    29|        1|   goodbye exams,...|[[document,0,39, ...|[[token,3,9,goodb...|[[token,3,9,goodb...|\n|    30|        0|   I didn\u0027t reali...|[[document,0,72, ...|[[token,3,3,I,Map...|[[token,3,3,I,Map...|\n|    31|        0|   I hate it when...|[[document,0,71, ...|[[token,3,3,I,Map...|[[token,3,3,I,Map...|\n|    32|        0|   i miss you guy...|[[document,0,128,...|[[token,3,3,i,Map...|[[token,3,3,i,Map...|\n|    33|        0|  -- Meet your Me...|[[document,0,39, ...|[[token,2,3,--,Ma...|[[token,2,3,--,Ma...|\n|    34|        0|   My horsie is m...|[[document,0,42, ...|[[token,3,4,My,Ma...|[[token,3,4,My,Ma...|\n|    35|        0|   No Sat off...N...|[[document,0,42, ...|[[token,3,4,No,Ma...|[[token,3,4,No,Ma...|\n|    36|        0|   Really Dont Li...|[[document,0,120,...|[[token,3,8,Reall...|[[token,3,8,Reall...|\n|    37|        0|   SOX!     Floyd...|[[document,0,58, ...|[[token,3,6,SOX!,...|[[token,3,6,SOX!,...|\n|    38|        0|   times by like ...|[[document,0,25, ...|[[token,3,7,times...|[[token,3,7,time,...|\n|    39|        1|   uploading pict...|[[document,0,35, ...|[[token,3,11,uplo...|[[token,3,11,uplo...|\n|    40|        0|   what type of a...|[[document,0,98, ...|[[token,3,6,what,...|[[token,3,6,what,...|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|[[document,0,37, ...|[[token,2,19,\u0026amp...|[[token,2,19,\u0026amp...|\n|    42|        1|  (: !!!!!! - so ...|[[document,0,128,...|[[token,2,3,(:,Ma...|[[token,2,3,(:,Ma...|\n|    43|        0|       *enough said*|[[document,0,14, ...|[[token,2,8,*enou...|[[token,2,8,*enou...|\n|    44|        1|  ... Do I need t...|[[document,0,108,...|[[token,2,4,...,M...|[[token,2,4,...,M...|\n|    45|        1|  ... health clas...|[[document,0,32, ...|[[token,2,4,...,M...|[[token,2,4,...,M...|\n|    46|        1|  @ginaaa \u0026lt;3 G...|[[document,0,37, ...|[[token,2,8,@gina...|[[token,2,8,@gina...|\n|    47|        0|  @Spiral_galaxy ...|[[document,0,84, ...|[[token,2,15,@Spi...|[[token,2,15,@Spi...|\n|    48|        0| - All Time Low s...|[[document,0,63, ...|[[token,1,1,-,Map...|[[token,1,1,-,Map...|\n|    49|        0|  and the enterta...|[[document,0,136,...|[[token,2,4,and,M...|[[token,2,4,and,M...|\n|    50|        0|  another year of...|[[document,0,59, ...|[[token,2,8,anoth...|[[token,2,8,anoth...|\n+------+---------+--------------------+--------------------+--------------------+--------------------+\nonly showing top 50 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512422985044_1982563185",
+      "id": "20171204-162945_139258263",
+      "dateCreated": "Dec 4, 2017 4:29:45 PM",
+      "dateStarted": "Dec 6, 2017 10:41:38 AM",
+      "dateFinished": "Dec 6, 2017 10:41:38 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## DateMatcherTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\ndate_matcher \u003d DateMatcher() \\\n            .setOutputCol(\"date\") \\\n            .setDateFormat(\"yyyyMM\")\nassembled \u003d document_assembler.transform(data)\n\ndate_matcher.transform(assembled).show(50)",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:46 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+--------------------+\n|itemid|sentiment|                text|            document|                date|\n+------+---------+--------------------+--------------------+--------------------+\n|     1|        0|                 ...|[[document,0,60, ...|                  []|\n|     2|        0|                 ...|[[document,0,50, ...|                  []|\n|     3|        1|              omg...|[[document,0,36, ...|                  []|\n|     4|        0|          .. Omga...|[[document,0,131,...|                  []|\n|     5|        0|         i think ...|[[document,0,52, ...|                  []|\n|     6|        0|         or i jus...|[[document,0,41, ...|                  []|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|                  []|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|[[date,31,38,2017...|\n|     9|        1|      handed in m...|[[document,0,52, ...|[[date,27,31,2017...|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|                  []|\n|    11|        0|      I must thin...|[[document,0,34, ...|                  []|\n|    12|        1|      thanks to a...|[[document,0,60, ...|                  []|\n|    13|        0|      this weeken...|[[document,0,35, ...|                  []|\n|    14|        0|     jb isnt show...|[[document,0,42, ...|                  []|\n|    15|        0|     ok thats it ...|[[document,0,24, ...|                  []|\n|    16|        0|    \u0026lt;-------- ...|[[document,0,51, ...|                  []|\n|    17|        0|    awhhe man.......|[[document,0,100,...|                  []|\n|    18|        1|    Feeling stran...|[[document,0,81, ...|                  []|\n|    19|        0|    HUGE roll of ...|[[document,0,47, ...|                  []|\n|    20|        0|    I just cut my...|[[document,0,135,...|                  []|\n|    21|        0|    Very sad abou...|[[document,0,23, ...|                  []|\n|    22|        0|       wompppp wompp|[[document,0,16, ...|                  []|\n|    23|        1|    You\u0027re the on...|[[document,0,119,...|                  []|\n|    24|        0|   \u0026lt;---Sad lev...|[[document,0,136,...|                  []|\n|    25|        0|   ...  Headed to...|[[document,0,133,...|                  []|\n|    26|        0|   BoRinG   ): wh...|[[document,0,69, ...|                  []|\n|    27|        0|   can\u0027t be bothe...|[[document,0,105,...|                  []|\n|    28|        0|   Feeeling like ...|[[document,0,124,...|[[date,73,75,2017...|\n|    29|        1|   goodbye exams,...|[[document,0,39, ...|                  []|\n|    30|        0|   I didn\u0027t reali...|[[document,0,72, ...|                  []|\n|    31|        0|   I hate it when...|[[document,0,71, ...|                  []|\n|    32|        0|   i miss you guy...|[[document,0,128,...|[[date,124,128,20...|\n|    33|        0|  -- Meet your Me...|[[document,0,39, ...|                  []|\n|    34|        0|   My horsie is m...|[[document,0,42, ...|                  []|\n|    35|        0|   No Sat off...N...|[[document,0,42, ...|                  []|\n|    36|        0|   Really Dont Li...|[[document,0,120,...|                  []|\n|    37|        0|   SOX!     Floyd...|[[document,0,58, ...|                  []|\n|    38|        0|   times by like ...|[[document,0,25, ...|                  []|\n|    39|        1|   uploading pict...|[[document,0,35, ...|                  []|\n|    40|        0|   what type of a...|[[document,0,98, ...|                  []|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|[[document,0,37, ...|                  []|\n|    42|        1|  (: !!!!!! - so ...|[[document,0,128,...|[[date,35,43,2017...|\n|    43|        0|       *enough said*|[[document,0,14, ...|                  []|\n|    44|        1|  ... Do I need t...|[[document,0,108,...|                  []|\n|    45|        1|  ... health clas...|[[document,0,32, ...|                  []|\n|    46|        1|  @ginaaa \u0026lt;3 G...|[[document,0,37, ...|                  []|\n|    47|        0|  @Spiral_galaxy ...|[[document,0,84, ...|                  []|\n|    48|        0| - All Time Low s...|[[document,0,63, ...|                  []|\n|    49|        0|  and the enterta...|[[document,0,136,...|                  []|\n|    50|        0|  another year of...|[[document,0,59, ...|                  []|\n+------+---------+--------------------+--------------------+--------------------+\nonly showing top 50 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512426074213_738663413",
+      "id": "20171204-172114_1905729810",
+      "dateCreated": "Dec 4, 2017 5:21:14 PM",
+      "dateStarted": "Dec 6, 2017 10:41:46 AM",
+      "dateFinished": "Dec 6, 2017 10:41:46 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## EntityExtractorTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\nentity_extractor \u003d EntityExtractor() \\\n            .setMaxLen(4) \\\n            .setEntities(\"/home/administrator/spark-nlp-master/src/test/resources/entity-extractor/test-phrases.txt\") \\\n            .setOutputCol(\"entity\")\nassembled \u003d document_assembler.transform(data)\n\nentity_extractor.transform(assembled).show(50)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:41:52 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+------+\n|itemid|sentiment|                text|            document|entity|\n+------+---------+--------------------+--------------------+------+\n|     1|        0|                 ...|[[document,0,60, ...|    []|\n|     2|        0|                 ...|[[document,0,50, ...|    []|\n|     3|        1|              omg...|[[document,0,36, ...|    []|\n|     4|        0|          .. Omga...|[[document,0,131,...|    []|\n|     5|        0|         i think ...|[[document,0,52, ...|    []|\n|     6|        0|         or i jus...|[[document,0,41, ...|    []|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|    []|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|    []|\n|     9|        1|      handed in m...|[[document,0,52, ...|    []|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|    []|\n|    11|        0|      I must thin...|[[document,0,34, ...|    []|\n|    12|        1|      thanks to a...|[[document,0,60, ...|    []|\n|    13|        0|      this weeken...|[[document,0,35, ...|    []|\n|    14|        0|     jb isnt show...|[[document,0,42, ...|    []|\n|    15|        0|     ok thats it ...|[[document,0,24, ...|    []|\n|    16|        0|    \u0026lt;-------- ...|[[document,0,51, ...|    []|\n|    17|        0|    awhhe man.......|[[document,0,100,...|    []|\n|    18|        1|    Feeling stran...|[[document,0,81, ...|    []|\n|    19|        0|    HUGE roll of ...|[[document,0,47, ...|    []|\n|    20|        0|    I just cut my...|[[document,0,135,...|    []|\n|    21|        0|    Very sad abou...|[[document,0,23, ...|    []|\n|    22|        0|       wompppp wompp|[[document,0,16, ...|    []|\n|    23|        1|    You\u0027re the on...|[[document,0,119,...|    []|\n|    24|        0|   \u0026lt;---Sad lev...|[[document,0,136,...|    []|\n|    25|        0|   ...  Headed to...|[[document,0,133,...|    []|\n|    26|        0|   BoRinG   ): wh...|[[document,0,69, ...|    []|\n|    27|        0|   can\u0027t be bothe...|[[document,0,105,...|    []|\n|    28|        0|   Feeeling like ...|[[document,0,124,...|    []|\n|    29|        1|   goodbye exams,...|[[document,0,39, ...|    []|\n|    30|        0|   I didn\u0027t reali...|[[document,0,72, ...|    []|\n|    31|        0|   I hate it when...|[[document,0,71, ...|    []|\n|    32|        0|   i miss you guy...|[[document,0,128,...|    []|\n|    33|        0|  -- Meet your Me...|[[document,0,39, ...|    []|\n|    34|        0|   My horsie is m...|[[document,0,42, ...|    []|\n|    35|        0|   No Sat off...N...|[[document,0,42, ...|    []|\n|    36|        0|   Really Dont Li...|[[document,0,120,...|    []|\n|    37|        0|   SOX!     Floyd...|[[document,0,58, ...|    []|\n|    38|        0|   times by like ...|[[document,0,25, ...|    []|\n|    39|        1|   uploading pict...|[[document,0,35, ...|    []|\n|    40|        0|   what type of a...|[[document,0,98, ...|    []|\n|    41|        0|  \u0026amp;\u0026amp;Fight...|[[document,0,37, ...|    []|\n|    42|        1|  (: !!!!!! - so ...|[[document,0,128,...|    []|\n|    43|        0|       *enough said*|[[document,0,14, ...|    []|\n|    44|        1|  ... Do I need t...|[[document,0,108,...|    []|\n|    45|        1|  ... health clas...|[[document,0,32, ...|    []|\n|    46|        1|  @ginaaa \u0026lt;3 G...|[[document,0,37, ...|    []|\n|    47|        0|  @Spiral_galaxy ...|[[document,0,84, ...|    []|\n|    48|        0| - All Time Low s...|[[document,0,63, ...|    []|\n|    49|        0|  and the enterta...|[[document,0,136,...|    []|\n|    50|        0|  another year of...|[[document,0,59, ...|    []|\n+------+---------+--------------------+--------------------+------+\nonly showing top 50 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512426164382_-591474832",
+      "id": "20171204-172244_550942851",
+      "dateCreated": "Dec 4, 2017 5:22:44 PM",
+      "dateStarted": "Dec 6, 2017 10:41:52 AM",
+      "dateFinished": "Dec 6, 2017 10:41:52 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## class PerceptronApproachTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\nsentence_detector \u003d SentenceDetectorModel() \\\n            .setInputCols([\"document\"]) \\\n            .setOutputCol(\"sentence\")\ntokenizer \u003d RegexTokenizer() \\\n            .setInputCols([\"sentence\"]) \\\n            .setOutputCol(\"token\")\npos_tagger \u003d PerceptronApproach() \\\n            .setInputCols([\"token\", \"sentence\"]) \\\n            .setOutputCol(\"pos\") \\\n            .setCorpusPath(\"/home/administrator/spark-nlp-master/src/main/resources/anc-pos-corpus\") \\\n            .setIterations(2) \\\n            .fit(data)\n\nassembled \u003d document_assembler.transform(data)\nsentenced \u003d sentence_detector.transform(assembled)\ntokenized \u003d tokenizer.transform(sentenced)\n\npos_tagger.transform(tokenized).show(10)\n#pos_tagger.transform(tokenized).take(10)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:42:02 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+--------------------+--------------------+--------------------+\n|itemid|sentiment|                text|            document|            sentence|               token|                 pos|\n+------+---------+--------------------+--------------------+--------------------+--------------------+--------------------+\n|     1|        0|                 ...|[[document,0,60, ...|[[document,0,27,i...|[[token,0,1,is,Ma...|[[pos,0,1,VBZ,Map...|\n|     2|        0|                 ...|[[document,0,50, ...|[[document,0,29,I...|[[token,0,0,I,Map...|[[pos,0,0,PRP,Map...|\n|     3|        1|              omg...|[[document,0,36, ...|[[document,0,22,o...|[[token,0,2,omg,M...|[[pos,0,2,RB,Map(...|\n|     4|        0|          .. Omga...|[[document,0,131,...|[[document,0,0,.,...|[[token,0,0,.,Map...|[[pos,0,0,.,Map(w...|\n|     5|        0|         i think ...|[[document,0,52, ...|[[document,0,33,i...|[[token,0,0,i,Map...|[[pos,0,0,PRP,Map...|\n|     6|        0|         or i jus...|[[document,0,41, ...|[[document,0,24,o...|[[token,0,1,or,Ma...|[[pos,0,1,CC,Map(...|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|[[document,0,33,J...|[[token,0,23,Juuu...|[[pos,0,23,NNP,Ma...|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|[[document,0,53,S...|[[token,0,4,Sunny...|[[pos,0,4,NNP,Map...|\n|     9|        1|      handed in m...|[[document,0,52, ...|[[document,0,27,h...|[[token,0,5,hande...|[[pos,0,5,VBN,Map...|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|[[document,0,5,hm...|[[token,0,5,hmmmm...|[[pos,0,5,NN,Map(...|\n+------+---------+--------------------+--------------------+--------------------+--------------------+--------------------+\nonly showing top 10 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512573004974_1611042886",
+      "id": "20171206-101004_580170767",
+      "dateCreated": "Dec 6, 2017 10:10:04 AM",
+      "dateStarted": "Dec 6, 2017 10:42:02 AM",
+      "dateFinished": "Dec 6, 2017 10:42:21 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n#Load the input data to be annotated\nNERdata \u003d spark. \\\n        read. \\\n        csv(\"/home/administrator/spark-nlp-master/src/test/resources/ner-corpus/icdtest.txt\"). \\\n        limit(1000)\nNERdata.cache()\nNERdata.count()\nNERdata.show(100)",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:42:13 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-------+\n|    _c0|\n+-------+\n|   text|\n|  X71.3|\n|  X74.9|\n|    X72|\n|    X74|\n|  X73.0|\n|  X73.1|\n|  X73.2|\n|    X75|\n|  X77.0|\n|  X77.1|\n|  X77.2|\n|    T61|\n|  X77.3|\n|  X71.0|\n|  X71.1|\n|  X71.2|\n|    X76|\n|  X78.0|\n|  X78.1|\n|  X78.2|\n|  X78.8|\n|  X78.9|\n|    X80|\n|  X81.0|\n|  X81.1|\n|  X81.8|\n|  X82.0|\n|  X82.1|\n|  X82.2|\n|  X82.8|\n|  X83.3|\n|  X83.1|\n|  X83.0|\n|  X83.8|\n|T71.162|\n+-------+\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512573979940_1218626367",
+      "id": "20171206-102619_1881834060",
+      "dateCreated": "Dec 6, 2017 10:26:19 AM",
+      "dateStarted": "Dec 6, 2017 10:42:13 AM",
+      "dateFinished": "Dec 6, 2017 10:42:21 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n\n## RegexNERApproachTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"_c0\") \\\n            .setOutputCol(\"document\")\nsentence_detector \u003d SentenceDetectorModel() \\\n            .setInputCols([\"document\"]) \\\n            .setOutputCol(\"sentence\")\ntokenizer \u003d RegexTokenizer() \\\n            .setInputCols([\"sentence\"]) \\\n            .setOutputCol(\"token\")\nner_tagger \u003d NERRegexApproach() \\\n            .setInputCols([\"sentence\"]) \\\n            .setOutputCol(\"NER\") \\\n            .fit(NERdata)\n            \nassembled \u003d document_assembler.transform(NERdata)\nsentenced \u003d sentence_detector.transform(assembled)\ntokenized \u003d tokenizer.transform(sentenced)\n\nresult \u003d ner_tagger.transform(tokenized)\n#result.select(\"NER\").take(10)\n#result.select(\"NER\").show(10)\nresult.show(10)\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:42:58 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+-----+--------------------+--------------------+--------------------+---+\n|  _c0|            document|            sentence|               token|NER|\n+-----+--------------------+--------------------+--------------------+---+\n| text|[[document,0,3,te...|[[document,0,3,te...|[[token,0,3,text,...| []|\n|X71.3|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X71.3...| []|\n|X74.9|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X74.9...| []|\n|  X72|[[document,0,2,X7...|[[document,0,2,X7...|[[token,0,2,X72,M...| []|\n|  X74|[[document,0,2,X7...|[[document,0,2,X7...|[[token,0,2,X74,M...| []|\n|X73.0|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X73.0...| []|\n|X73.1|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X73.1...| []|\n|X73.2|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X73.2...| []|\n|  X75|[[document,0,2,X7...|[[document,0,2,X7...|[[token,0,2,X75,M...| []|\n|X77.0|[[document,0,4,X7...|[[document,0,4,X7...|[[token,0,4,X77.0...| []|\n+-----+--------------------+--------------------+--------------------+---+\nonly showing top 10 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512573393061_-745390886",
+      "id": "20171206-101633_1932144486",
+      "dateCreated": "Dec 6, 2017 10:16:33 AM",
+      "dateStarted": "Dec 6, 2017 10:42:58 AM",
+      "dateFinished": "Dec 6, 2017 10:42:58 AM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n\n## PragmaticSBDTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\nsentence_detector \u003d SentenceDetectorModel() \\\n            .setInputCols([\"document\"]) \\\n            .setOutputCol(\"sentence\") \\\n            .setCustomBounds([\"%%\"])\nassembled \u003d document_assembler.transform(data)\n        \nsentence_detector.transform(assembled).show()\n\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 12:57:55 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "+------+---------+--------------------+--------------------+--------------------+\n|itemid|sentiment|                text|            document|            sentence|\n+------+---------+--------------------+--------------------+--------------------+\n|     1|        0|                 ...|[[document,0,60, ...|[[document,0,27,i...|\n|     2|        0|                 ...|[[document,0,50, ...|[[document,0,29,I...|\n|     3|        1|              omg...|[[document,0,36, ...|[[document,0,22,o...|\n|     4|        0|          .. Omga...|[[document,0,131,...|[[document,0,0,.,...|\n|     5|        0|         i think ...|[[document,0,52, ...|[[document,0,33,i...|\n|     6|        0|         or i jus...|[[document,0,41, ...|[[document,0,24,o...|\n|     7|        1|       Juuuuuuuuu...|[[document,0,40, ...|[[document,0,33,J...|\n|     8|        0|       Sunny Agai...|[[document,0,60, ...|[[document,0,53,S...|\n|     9|        1|      handed in m...|[[document,0,52, ...|[[document,0,27,h...|\n|    10|        1|      hmmmm.... i...|[[document,0,45, ...|[[document,0,5,hm...|\n|    11|        0|      I must thin...|[[document,0,34, ...|[[document,0,27,I...|\n|    12|        1|      thanks to a...|[[document,0,60, ...|[[document,0,46,t...|\n|    13|        0|      this weeken...|[[document,0,35, ...|[[document,0,29,t...|\n|    14|        0|     jb isnt show...|[[document,0,42, ...|[[document,0,37,j...|\n|    15|        0|     ok thats it ...|[[document,0,24, ...|[[document,0,19,o...|\n|    16|        0|    \u0026lt;-------- ...|[[document,0,51, ...|[[document,0,3,\u0026l...|\n|    17|        0|    awhhe man.......|[[document,0,100,...|[[document,0,11,a...|\n|    18|        1|    Feeling stran...|[[document,0,81, ...|[[document,0,22,F...|\n|    19|        0|    HUGE roll of ...|[[document,0,47, ...|[[document,0,29,H...|\n|    20|        0|    I just cut my...|[[document,0,135,...|[[document,0,23,I...|\n+------+---------+--------------------+--------------------+--------------------+\nonly showing top 20 rows\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512574688989_-1700671498",
+      "id": "20171206-103808_63460592",
+      "dateCreated": "Dec 6, 2017 10:38:08 AM",
+      "dateStarted": "Dec 6, 2017 12:57:55 PM",
+      "dateFinished": "Dec 6, 2017 12:57:55 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## PragmaticScorerTestSpec\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\nsentence_detector \u003d SentenceDetectorModel() \\\n            .setInputCols([\"document\"]) \\\n            .setOutputCol(\"sentence\")\ntokenizer \u003d RegexTokenizer() \\\n            .setInputCols([\"sentence\"]) \\\n            .setOutputCol(\"token\")\nlemmatizer \u003d Lemmatizer() \\\n            .setInputCols([\"token\"]) \\\n            .setOutputCol(\"lemma\") \\\n            .setDictionary({\"missed\": \"miss\"})\nsentiment_detector \u003d SentimentDetectorModel() \\\n            .setInputCols([\"lemma\", \"sentence\"]) \\\n            .setOutputCol(\"sentiment\")\n\nassembled \u003d document_assembler.transform(data)\nsentenced \u003d sentence_detector.transform(assembled)\ntokenized \u003d tokenizer.transform(sentenced)\nlemmatized \u003d lemmatizer.transform(tokenized)\n\nsentiment_detector.transform(lemmatized).show(10)\n#sentiment_detector.transform(lemmatized).take(10)\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:33:29 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1511994985658_-1094526114",
+      "id": "20171129-173625_570467616",
+      "dateCreated": "Nov 29, 2017 5:36:25 PM",
+      "dateStarted": "Dec 6, 2017 10:33:29 AM",
+      "dateFinished": "Dec 6, 2017 10:33:29 AM",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n\n## PipelineTestSpec(unittest.TestCase):\n\ndocument_assembler \u003d DocumentAssembler() \\\n            .setInputCol(\"text\") \\\n            .setOutputCol(\"document\")\ntokenizer \u003d RegexTokenizer() \\\n            .setOutputCol(\"token\")\nlemmatizer \u003d Lemmatizer() \\\n            .setInputCols([\"token\"]) \\\n            .setOutputCol(\"lemma\") \\\n            .setDictionary({\"sad\": \"unsad\"})\nfinisher \u003d Finisher() \\\n            .setInputCols([\"token\", \"lemma\"]) \\\n            .setOutputCols([\"token_views\", \"lemma_views\"])\npipeline \u003d Pipeline(stages\u003d[document_assembler, tokenizer, lemmatizer, finisher])\n\nmodel \u003d pipeline.fit(data)\n\ntoken_before_save \u003d model.transform(data).select(\"token_views\").take(1)[0].token_views.split(\"@\")[2]\nlemma_before_save \u003d model.transform(data).select(\"lemma_views\").take(1)[0].lemma_views.split(\"@\")[2]\npipe_path \u003d \"./tmp_pipeline\"\npipeline.write().overwrite().save(pipe_path)\n\nloaded_pipeline \u003d Pipeline.read().load(pipe_path)\ntoken_after_save \u003d model.transform(data).select(\"token_views\").take(1)[0].token_views.split(\"@\")[2]\nlemma_after_save \u003d model.transform(data).select(\"lemma_views\").take(1)[0].lemma_views.split(\"@\")[2]\nprint(token_before_save)\n\nassert token_before_save \u003d\u003d \"sad\"\nassert lemma_before_save \u003d\u003d \"unsad\"\nassert token_after_save \u003d\u003d token_before_save\nassert lemma_after_save \u003d\u003d lemma_before_save\nloaded_pipeline.fit(data).transform(data).show()\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 1:00:15 PM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "ERROR",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-6362237539168692037.py\", line 355, in \u003cmodule\u003e\n    exec(code, _zcUserQueryNameSpace)\n  File \"\u003cstdin\u003e\", line 19, in \u003cmodule\u003e\n  File \"/usr/local/spark/python/pyspark/ml/util.py\", line 198, in load\n    return self._clazz._from_java(java_obj)\n  File \"/usr/local/spark/python/pyspark/ml/pipeline.py\", line 155, in _from_java\n    py_stages \u003d [JavaParams._from_java(s) for s in java_stage.getStages()]\n  File \"/usr/local/spark/python/pyspark/ml/pipeline.py\", line 155, in \u003clistcomp\u003e\n    py_stages \u003d [JavaParams._from_java(s) for s in java_stage.getStages()]\n  File \"/usr/local/spark/python/pyspark/ml/wrapper.py\", line 173, in _from_java\n    py_type \u003d __get_class(stage_name)\n  File \"/usr/local/spark/python/pyspark/ml/wrapper.py\", line 167, in __get_class\n    m \u003d __import__(module)\nImportError: No module named \u0027com.johnsnowlabs\u0027\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-6362237539168692037.py\", line 367, in \u003cmodule\u003e\n    raise Exception(traceback.format_exc())\nException: Traceback (most recent call last):\n  File \"/tmp/zeppelin_pyspark-6362237539168692037.py\", line 355, in \u003cmodule\u003e\n    exec(code, _zcUserQueryNameSpace)\n  File \"\u003cstdin\u003e\", line 19, in \u003cmodule\u003e\n  File \"/usr/local/spark/python/pyspark/ml/util.py\", line 198, in load\n    return self._clazz._from_java(java_obj)\n  File \"/usr/local/spark/python/pyspark/ml/pipeline.py\", line 155, in _from_java\n    py_stages \u003d [JavaParams._from_java(s) for s in java_stage.getStages()]\n  File \"/usr/local/spark/python/pyspark/ml/pipeline.py\", line 155, in \u003clistcomp\u003e\n    py_stages \u003d [JavaParams._from_java(s) for s in java_stage.getStages()]\n  File \"/usr/local/spark/python/pyspark/ml/wrapper.py\", line 173, in _from_java\n    py_type \u003d __get_class(stage_name)\n  File \"/usr/local/spark/python/pyspark/ml/wrapper.py\", line 167, in __get_class\n    m \u003d __import__(module)\nImportError: No module named \u0027com.johnsnowlabs\u0027\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "jobName": "paragraph_1512574750366_489242620",
+      "id": "20171206-103910_75713369",
+      "dateCreated": "Dec 6, 2017 10:39:10 AM",
+      "dateStarted": "Dec 6, 2017 1:00:15 PM",
+      "dateFinished": "Dec 6, 2017 1:00:15 PM",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\n## SpellCheckerTestSpec\ntokenizer \u003d RegexTokenizer() \\\n            .setOutputCol(\"token\")\nspell_checker \u003d NorvigSweetingApproach() \\\n            .setInputCols([\"token\"]) \\\n            .setOutputCol(\"spell\") \\\n            .setCorpusPath(\"/home/administrator/spark-nlp-master/src/test/resources/spell/sherlockholmes.txt\") \\\n            .fit(data)\nassembled \u003d document_assembler.transform(data)\ntokenized \u003d tokenizer.transform(assembled)\nchecked \u003d spell_checker.transform(tokenized)\nchecked.show(50)",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 9:59:40 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1512416801290_1588903837",
+      "id": "20171204-144641_2091491816",
+      "dateCreated": "Dec 4, 2017 2:46:41 PM",
+      "dateStarted": "Dec 6, 2017 9:59:40 AM",
+      "dateFinished": "Dec 6, 2017 9:59:43 AM",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n\nsentiment_data \u003d pipeline.fit(data).transform(data)\nsentiment_data.take(10)\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 10:40:24 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1511995039291_1688640160",
+      "id": "20171129-173719_180883086",
+      "dateCreated": "Nov 29, 2017 5:37:19 PM",
+      "dateStarted": "Dec 6, 2017 10:40:24 AM",
+      "dateFinished": "Dec 6, 2017 10:40:24 AM",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%pyspark\n",
+      "user": "anonymous",
+      "dateUpdated": "Dec 6, 2017 9:59:39 AM",
+      "config": {
+        "colWidth": 12.0,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "python"
+        },
+        "editorMode": "ace/mode/python"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "jobName": "paragraph_1511995059412_-517864133",
+      "id": "20171129-173739_766233989",
+      "dateCreated": "Nov 29, 2017 5:37:39 PM",
+      "status": "FINISHED",
+      "errorMessage": "",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Sentiment Analysis using PySpark JSL NLP",
+  "id": "2D2PKGQGH",
+  "angularObjects": {
+    "2CYKGGQBH:shared_process": [],
+    "2CZXZ5WZG:shared_process": []
+  },
+  "config": {},
+  "info": {}
+}
