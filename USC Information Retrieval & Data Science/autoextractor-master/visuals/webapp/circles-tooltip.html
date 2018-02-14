@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+
+  <style type="text/css">
+
+     a:link, a:visited {
+        color: #777;
+        text-decoration: none;
+    }
+    a:hover {
+        color: #666;
+    }
+    text {
+        font-size: 11px;
+        pointer-events: none;
+    }
+    text.parent {
+        fill: #1f77b4;
+    }
+    circle {
+        fill: #ccc;
+        stroke: #999;
+        pointer-events: all;
+    }
+    circle.parent {
+        fill: #1f77b4;
+        fill-opacity: .1;
+        stroke: steelblue;
+    }
+    circle.parent:hover {
+        stroke: #ff7f0e;
+        stroke-width: .5px;
+    }
+  </style>
+  <title></title>
+</head>
+<body>
+ <!-------------->
+      <div>
+        <h2> Choose Clusters JSON File </h2> <p>Format = flares.json</p>
+        <input type="file" id="file" />
+      </div>
+      <hr/>
+      <h2 id="heading"></h2>
+       <script type="text/javascript">
+           document.getElementById("file").onchange = function(){
+              file = document.getElementById("file").files[0];
+              document.getElementById("heading").textContent = "Visualizing : " + file.name;
+
+              reader = new FileReader();
+              reader.onload = function(e){
+                  data = JSON.parse(reader.result)
+                  console.log("Loading Clusters...");
+                  loadClusters(data)
+              };
+              reader.readAsText(file);
+          }
+      </script>
+    <!------------>
+    <div id="svg-container"></div>
+  <script type="text/javascript" src="js/d3.min.js"></script>
+
+<script type='text/javascript'>
+
+
+    function zoom(d, i) {
+
+        var k = r / d.r / 2;
+        x.domain([d.x - d.r, d.x + d.r]);
+        y.domain([d.y - d.r, d.y + d.r]);
+
+        var t = vis.transition()
+            .duration(d3.event.altKey ? 7500 : 750);
+
+        t.selectAll("circle")
+            .attr("cx", function (d) { return x(d.x); })
+            .attr("cy", function (d) { return y(d.y); })
+            .attr("r", function (d) { return k * d.r; });
+        t.selectAll("text")
+            .attr("x", function (d) { return x(d.x); })
+            .attr("y", function (d) { return y(d.y); })
+            .style("opacity", function (d) { return k * d.r > 20 ? 1 : 0;
+        });
+
+        node = d;
+        d3.event.stopPropagation();
+    }
+
+    console.log("Setting up variables...");
+    var w = 1600,
+        h = 768,
+        r = 768,
+        x = d3.scale.linear().range([0, r]),
+        y = d3.scale.linear().range([0, r]),
+        node,
+        root;
+
+    console.log("Setting up the pack function...");
+    var pack = d3.layout.pack()
+        .size([r, r])
+        .value(function (d) {
+        return d.size;
+    });
+
+    console.log("Adding the svg to the document...");
+    var vis = d3.select("#svg-container").append("svg:svg", "h2")
+        .attr("width", w)
+        .attr("height", h)
+        .append("svg:g")
+        .attr("transform", "translate(" + (w - r) / 2 + "," + (h - r) / 2 + ")");
+
+
+    function loadClusters(data){
+        vis.selectAll("*").remove()
+        node = root = data//$.parseJSON(jsondata);
+
+        console.log("Packing the nodes...");
+        var nodes = pack.nodes(root);
+
+        console.log("Configuring all of the svg:circles...");
+        vis.selectAll("circle")
+            .data(nodes)
+            .enter()
+                .append("svg:circle")
+                .attr("class", function (d) {return d.children ? "parent" : "child";})
+                .attr("cx", function (d) { return d.x;})
+                .attr("cy", function (d) { return d.y; })
+                .attr("r", function (d) { return  d.r;})
+                .on("click", function (d) { return zoom(node == d ? root : d);})
+                .on("contextmenu", function (d, i) {
+                    url = d.name
+                    if (/https?:\/\/.*/.test(url)) {
+                        window.open(url,'_blank');
+                        d3.event.preventDefault();
+                    } else {
+                      console.log(url + ' is not an url')
+                    }
+                })
+                .append("title")
+                    .text(function(d) {
+                        s = "";
+                        for (var i in d){
+                            if (typeof d[i] != 'object') {
+                                s += i + " : " + d[i] + "\n"
+                            }
+                        }
+                        return s;
+                });
+
+        console.log("Configuring all of the svg:texts...");
+        vis.selectAll("text")
+            .data(nodes)
+            .enter()
+                .append("svg:text")
+                .attr("class", function (d) { return d.children ? "parent" : "child"; })
+                .attr("x", function (d) { return d.x; })
+                .attr("y", function (d) { return d.y; })
+                .attr("dy", ".35em")
+                .attr("text-anchor", "middle")
+                .style("opacity", function (d) { return d.r > 20 ? 1 : 0;})
+                .text(function (d) { return d.index ? d.index : d.name; });
+        }
+        console.log("Binding the zoom function");
+        d3.select(window).on("click", function () { zoom(root); });
+</script>
+</body>
+</html>

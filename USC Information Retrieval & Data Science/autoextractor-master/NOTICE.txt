@@ -1,0 +1,14 @@
+Auto-Extractor
+==============
+Copyright 2016 Information Retrieval and Data Science (IRDS) Group,
+
+This product includes software developed at
+ Information Retrieval and Data Science Group, University of Southern California (USC), Los Angeles, CA (http://irds.usc.edu)
+and
+ NASA Jet Propulsion Laboratory, Pasadena, CA (http://www.jpl.nasa.gov/)
+
+This product Uses:
+* APTED :
+   The MIT License (MIT) , Copyright (c) 2016 Mateusz Pawlik and Nikolaus Augsten
+
+* Many other open source tools with Apache Licence 2.0
