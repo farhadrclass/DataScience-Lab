@@ -1,0 +1,3 @@
+[submodule "Samples/NLP_Tutorial_100b"]
+	path = Samples/NLP_Tutorial_100b
+	url = https://github.com/hundredblocks/concrete_NLP_tutorial
